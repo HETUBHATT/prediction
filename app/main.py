@@ -3,7 +3,8 @@ import csv
 import sqlite3
 import uvicorn
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import StreamingResponse
+from pathlib import Path
+from fastapi.responses import FileResponse ,StreamingResponse
 try:
     from .db import execute, init_db, query
     from .schemas import AcademicRecordCreate, AssignmentCreate, AttendanceCreate, CorrectionRequest, FacultyCreate, ResultCreate, StudentCreate, StudentUpdate, SubmissionCreate, TestCreate
@@ -14,7 +15,10 @@ except ImportError:
     from services import grade, predict
 
 app = FastAPI(title='Predictive Student Academic Performance API', version='1.0.0', description='Student academic management, assessment, results, analytics, and ML risk prediction.')
-
+BASE_DIR = Path(__file__).resolve().parent
+@app.get("/addstudent.html", include_in_schema=False)
+def add_student_page():
+    return FileResponse(BASE_DIR / "static" / "addstudent.html")
 @app.on_event('startup')
 def startup():
     init_db()

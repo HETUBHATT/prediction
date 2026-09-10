@@ -21,6 +21,16 @@ class FacultyCreate(BaseModel):
     email: str
     department: str
     phone: str | None = None
+    faculty_code: str = Field(default='2124', pattern=r'^2124$')
+
+class FacultyLogin(BaseModel):
+    email: str
+    faculty_code: str = Field(pattern=r'^2124$')
+
+class LoginRequest(BaseModel):
+    role: Literal['student', 'faculty']
+    email: str
+    faculty_code: str | None = Field(default=None, pattern=r'^2124$')
 
 class AcademicRecordCreate(BaseModel):
     student_id: int
@@ -58,6 +68,16 @@ class SubmissionCreate(BaseModel):
     test_id: int
     student_id: int
     answer_paper: str = Field(min_length=1)
+
+class AnnotationPoint(BaseModel):
+    x: float = Field(ge=0, le=1)
+    y: float = Field(ge=0, le=1)
+
+class PenAnnotation(BaseModel):
+    page: int = Field(ge=1)
+    points: list[AnnotationPoint] = Field(min_length=2)
+    color: str = Field(default='#d92d20', pattern=r'^#[0-9a-fA-F]{6}$')
+    width: float = Field(default=2, gt=0, le=20)
 
 class CorrectionRequest(BaseModel):
     score: float = Field(ge=0)

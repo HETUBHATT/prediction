@@ -17,8 +17,17 @@ SQLite data is stored in `data/academic.db`. Set `ACADEMIC_DB_PATH` to use anoth
 
 ## Main endpoint groups
 
-- `/students`, `/faculty`
+- `/login`, `/students`, `/faculty`, `/faculty/login`
 - `/attendance`, `/assignments`
 - `/tests`, `/submissions`, `/results`
 - `/predictions`, `/analytics`
 - `/reports`
+
+Use `POST /login` and choose either `student` or `faculty`. Faculty accounts use the static code `2124` with the officially registered email:
+
+```json
+POST /login
+{"role":"faculty","email":"faculty@example.com","faculty_code":"2124"}
+```
+
+Use the returned `faculty_id` and `faculty_code=2124` on faculty submission endpoints. No bearer token is required.

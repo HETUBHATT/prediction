@@ -1,24 +1,48 @@
 from io import BytesIO
 import csv
+import hashlib
+import hmac
+import json
 import sqlite3
+from pathlib import Path
+from uuid import uuid4
 import uvicorn
+<<<<<<< HEAD
 from fastapi import FastAPI, HTTPException, Query
 from pathlib import Path
 from fastapi.responses import FileResponse ,StreamingResponse
+=======
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
+from fastapi.responses import FileResponse, StreamingResponse
+>>>>>>> 7f01a0e (new code logic api merge)
 try:
     from .db import execute, init_db, query
-    from .schemas import AcademicRecordCreate, AssignmentCreate, AttendanceCreate, CorrectionRequest, FacultyCreate, ResultCreate, StudentCreate, StudentUpdate, SubmissionCreate, TestCreate
+    from .db import DB_PATH
+    from .schemas import AcademicRecordCreate, AssignmentCreate, AttendanceCreate, CorrectionRequest, FacultyCreate, FacultyLogin, LoginRequest, PenAnnotation, ResultCreate, StudentCreate, StudentUpdate, TestCreate
     from .services import grade, predict
 except ImportError:
     from db import execute, init_db, query
-    from schemas import AcademicRecordCreate, AssignmentCreate, AttendanceCreate, CorrectionRequest, FacultyCreate, ResultCreate, StudentCreate, StudentUpdate, SubmissionCreate, TestCreate
+    from db import DB_PATH
+    from schemas import AcademicRecordCreate, AssignmentCreate, AttendanceCreate, CorrectionRequest, FacultyCreate, FacultyLogin, LoginRequest, PenAnnotation, ResultCreate, StudentCreate, StudentUpdate, TestCreate
     from services import grade, predict
 
 app = FastAPI(title='Predictive Student Academic Performance API', version='1.0.0', description='Student academic management, assessment, results, analytics, and ML risk prediction.')
+<<<<<<< HEAD
 BASE_DIR = Path(__file__).resolve().parent
 @app.get("/addstudent.html", include_in_schema=False)
 def add_student_page():
     return FileResponse(BASE_DIR / "static" / "addstudent.html")
+=======
+UPLOAD_DIR = DB_PATH.parent / 'submissions'
+MAX_SUBMISSION_SIZE = 10 * 1024 * 1024
+ALLOWED_FILES = {
+    '.pdf': 'application/pdf',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+}
+
+>>>>>>> 7f01a0e (new code logic api merge)
 @app.on_event('startup')
 def startup():
     init_db()
@@ -34,6 +58,16 @@ def create(sql: str, params, fetch_sql: str, label='Resource'):
     except sqlite3.IntegrityError as exc:
         raise HTTPException(409, f'{label} conflicts with an existing record') from exc
     return one_or_404(fetch_sql, [result['id']], label)
+
+def hash_faculty_code(code: str) -> str:
+    return hashlib.sha256(code.encode()).hexdigest()
+
+def faculty_from_credentials(faculty_id: int, faculty_code: str) -> dict:
+    faculty = one_or_404('SELECT id,name,email,department,phone,faculty_code_hash FROM faculty WHERE id=?', [faculty_id], 'Faculty')
+    if not faculty['faculty_code_hash'] or not hmac.compare_digest(faculty['faculty_code_hash'], hash_faculty_code(faculty_code)):
+        raise HTTPException(401, 'Invalid faculty credentials')
+    faculty.pop('faculty_code_hash', None)
+    return faculty
 
 @app.get('/health', tags=['System'])
 def health():
@@ -67,11 +101,33 @@ def delete_student(student_id: int):
 
 @app.post('/faculty', tags=['Faculty Management'])
 def add_faculty(payload: FacultyCreate):
-    return create('INSERT INTO faculty(name,email,department,phone) VALUES(?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM faculty WHERE id=?', 'Faculty')
+    values = [payload.name, payload.email.lower(), payload.department, payload.phone, hash_faculty_code(payload.faculty_code)]
+    return create('INSERT INTO faculty(name,email,department,phone,faculty_code_hash) VALUES(?,?,?,?,?)', values, 'SELECT id,name,email,department,phone,created_at FROM faculty WHERE id=?', 'Faculty')
+
+@app.post('/faculty/login', tags=['Faculty Authentication'])
+def faculty_login(payload: FacultyLogin):
+    faculty_rows = query('SELECT id,email,faculty_code_hash FROM faculty WHERE lower(email)=lower(?)', [payload.email])
+    faculty = faculty_rows[0] if faculty_rows else None
+    if not faculty or not faculty['faculty_code_hash'] or not hmac.compare_digest(faculty['faculty_code_hash'], hash_faculty_code(payload.faculty_code)):
+        raise HTTPException(401, 'Invalid faculty email or code')
+    return {'role': 'faculty', 'faculty_id': faculty['id'], 'email': faculty['email']}
+
+@app.post('/login', tags=['Authentication'])
+def login(payload: LoginRequest):
+    if payload.role == 'faculty':
+        if payload.faculty_code != '2124':
+            raise HTTPException(401, 'Faculty login requires code 2124')
+        faculty = query('SELECT id,email,faculty_code_hash FROM faculty WHERE lower(email)=lower(?)', [payload.email])
+        if not faculty or not hmac.compare_digest(faculty[0]['faculty_code_hash'] or '', hash_faculty_code(payload.faculty_code)):
+            raise HTTPException(401, 'Invalid faculty email or code')
+        return {'role': 'faculty', 'faculty_id': faculty[0]['id'], 'email': faculty[0]['email']}
+    student = one_or_404('SELECT id,name,email FROM students WHERE lower(email)=lower(?)', [payload.email], 'Student')
+    return {'role': 'student', 'student_id': student['id'], 'name': student['name'], 'email': student['email']}
 
 @app.get('/faculty', tags=['Faculty Management'])
 def view_faculty_list(department: str | None = None):
-    return query('SELECT * FROM faculty WHERE department=? ORDER BY name' if department else 'SELECT * FROM faculty ORDER BY name', [department] if department else [])
+    fields = 'id,name,email,department,phone,created_at'
+    return query(f'SELECT {fields} FROM faculty WHERE department=? ORDER BY name' if department else f'SELECT {fields} FROM faculty ORDER BY name', [department] if department else [])
 
 @app.delete('/faculty/{faculty_id}', tags=['Faculty Management'])
 def delete_faculty(faculty_id: int):
@@ -113,21 +169,79 @@ def schedule_test(payload: TestCreate):
 def list_tests(subject: str | None = None):
     return query('SELECT * FROM tests WHERE subject=? ORDER BY created_at DESC' if subject else 'SELECT * FROM tests ORDER BY created_at DESC', [subject] if subject else [])
 
-def upload_test_paper(test_id: int, payload: SubmissionCreate):
-    if payload.test_id != test_id: raise HTTPException(422, 'Path test_id and body test_id must match')
-    one_or_404('SELECT id FROM tests WHERE id=?', [test_id], 'Test'); one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student')
-    return create('INSERT INTO submissions(test_id,student_id,answer_paper) VALUES(?,?,?)', [test_id, payload.student_id, payload.answer_paper], 'SELECT * FROM submissions WHERE id=?', 'Submission')
+def faculty_test(test_id: int, faculty_id: int):
+    one_or_404('SELECT id FROM faculty WHERE id=?', [faculty_id], 'Faculty')
+    test = one_or_404('SELECT id,faculty_id FROM tests WHERE id=?', [test_id], 'Test')
+    if test['faculty_id'] is not None and test['faculty_id'] != faculty_id:
+        raise HTTPException(403, 'Only the assigned faculty can review this submission')
+    return test
 
-@app.get('/submissions', tags=['Online Test Management'])
-def list_submissions(test_id: int | None = None, student_id: int | None = None):
-    sql, params = 'SELECT * FROM submissions WHERE 1=1', []
-    if test_id: sql += ' AND test_id=?'; params.append(test_id)
-    if student_id: sql += ' AND student_id=?'; params.append(student_id)
-    return query(sql + ' ORDER BY submitted_at DESC', params)
+@app.post('/tests/{test_id}/submissions', tags=['Online Test Management'])
+async def upload_test_paper(test_id: int, student_id: int = Form(...), file: UploadFile = File(...)):
+    one_or_404('SELECT id FROM tests WHERE id=?', [test_id], 'Test')
+    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student')
+    suffix = Path(file.filename or '').suffix.lower()
+    if suffix not in ALLOWED_FILES or file.content_type != ALLOWED_FILES[suffix]:
+        raise HTTPException(415, 'Submission must be a PDF, JPG, JPEG, or PNG file')
+    contents = await file.read(MAX_SUBMISSION_SIZE + 1)
+    if len(contents) > MAX_SUBMISSION_SIZE:
+        raise HTTPException(413, 'Submission file must be 10 MB or smaller')
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    stored_name = f'{uuid4().hex}{suffix}'
+    stored_path = UPLOAD_DIR / stored_name
+    stored_path.write_bytes(contents)
+    try:
+        result = execute(
+            'INSERT INTO submissions(test_id,student_id,answer_paper,file_name,file_path,content_type,file_size) VALUES(?,?,?,?,?,?,?)',
+            [test_id, student_id, stored_name, file.filename, str(stored_path), file.content_type, len(contents)],
+        )
+    except sqlite3.IntegrityError as exc:
+        stored_path.unlink(missing_ok=True)
+        raise HTTPException(409, 'Student already submitted this test') from exc
+    return one_or_404('SELECT id,test_id,student_id,file_name,content_type,file_size,submitted_at,status FROM submissions WHERE id=?', [result['id']], 'Submission')
+
+@app.get('/submissions', tags=['Faculty Submission Review'])
+def list_submissions(faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$'), test_id: int | None = None, student_id: int | None = None):
+    faculty_from_credentials(faculty_id, faculty_code)
+    if test_id: faculty_test(test_id, faculty_id)
+    sql = 'SELECT s.id,s.test_id,s.student_id,s.file_name,s.content_type,s.file_size,s.submitted_at,s.score,s.feedback,s.status FROM submissions s JOIN tests t ON t.id=s.test_id WHERE (t.faculty_id=? OR t.faculty_id IS NULL)'
+    params = [faculty_id]
+    if test_id: sql += ' AND s.test_id=?'; params.append(test_id)
+    if student_id: sql += ' AND s.student_id=?'; params.append(student_id)
+    return query(sql + ' ORDER BY s.submitted_at DESC', params)
+
+@app.get('/submissions/{submission_id}', tags=['Faculty Submission Review'])
+def review_submission(submission_id: int, faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$')):
+    submission = one_or_404('SELECT s.*,t.faculty_id FROM submissions s JOIN tests t ON t.id=s.test_id WHERE s.id=?', [submission_id], 'Submission')
+    faculty_from_credentials(faculty_id, faculty_code)
+    faculty_test(submission['test_id'], faculty_id)
+    submission['annotations'] = json.loads(submission.pop('annotations_json') or '[]')
+    return submission
+
+@app.get('/submissions/{submission_id}/file', tags=['Faculty Submission Review'], response_class=FileResponse)
+def download_submission(submission_id: int, faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$')):
+    submission = one_or_404('SELECT * FROM submissions WHERE id=?', [submission_id], 'Submission')
+    faculty_from_credentials(faculty_id, faculty_code)
+    faculty_test(submission['test_id'], faculty_id)
+    if not submission['file_path'] or not Path(submission['file_path']).is_file():
+        raise HTTPException(404, 'Submission file not found')
+    return FileResponse(submission['file_path'], media_type=submission['content_type'], filename=submission['file_name'])
+
+@app.post('/submissions/{submission_id}/annotations', tags=['Faculty Submission Review'])
+def annotate_submission(submission_id: int, payload: PenAnnotation, faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$')):
+    submission = one_or_404('SELECT * FROM submissions WHERE id=?', [submission_id], 'Submission')
+    faculty_from_credentials(faculty_id, faculty_code)
+    faculty_test(submission['test_id'], faculty_id)
+    annotations = json.loads(submission['annotations_json'] or '[]')
+    annotations.append(payload.model_dump())
+    execute('UPDATE submissions SET annotations_json=?,status=? WHERE id=?', [json.dumps(annotations), 'in_review', submission_id])
+    return {'submission_id': submission_id, 'annotations': annotations, 'status': 'in_review'}
 
 @app.post('/submissions/{submission_id}/correct', tags=['Automatic Test Evaluation'])
-def correct_test(submission_id: int, payload: CorrectionRequest):
+def correct_test(submission_id: int, payload: CorrectionRequest, faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$')):
     submission = one_or_404('SELECT s.*,t.total_marks FROM submissions s JOIN tests t ON t.id=s.test_id WHERE s.id=?', [submission_id], 'Submission')
+    faculty_from_credentials(faculty_id, faculty_code)
+    faculty_test(submission['test_id'], faculty_id)
     if payload.score > submission['total_marks']: raise HTTPException(422, 'Score cannot exceed total marks')
     execute('UPDATE submissions SET score=?,feedback=?,status=? WHERE id=?', [payload.score, payload.feedback, 'corrected', submission_id])
     return one_or_404('SELECT * FROM submissions WHERE id=?', [submission_id], 'Submission')

@@ -1,4 +1,5 @@
 import os
+import hashlib
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
@@ -14,7 +15,7 @@ CREATE TABLE IF NOT EXISTS students (
 );
 CREATE TABLE IF NOT EXISTS faculty (
  id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,
- department TEXT NOT NULL, phone TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+ department TEXT NOT NULL, phone TEXT, faculty_code_hash TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS academic_records (
  id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
@@ -40,6 +41,7 @@ CREATE TABLE IF NOT EXISTS tests (
 CREATE TABLE IF NOT EXISTS submissions (
  id INTEGER PRIMARY KEY AUTOINCREMENT, test_id INTEGER NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
  student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE, answer_paper TEXT NOT NULL,
+ file_name TEXT, file_path TEXT, content_type TEXT, file_size INTEGER, annotations_json TEXT NOT NULL DEFAULT '[]',
  submitted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, score REAL, feedback TEXT, status TEXT NOT NULL DEFAULT 'submitted',
  UNIQUE(test_id, student_id)
 );
@@ -68,6 +70,23 @@ def connection():
 def init_db():
     with connection() as conn:
         conn.executescript(SCHEMA)
+        faculty_columns = {row[1] for row in conn.execute('PRAGMA table_info(faculty)').fetchall()}
+        if 'faculty_code_hash' not in faculty_columns:
+            conn.execute('ALTER TABLE faculty ADD COLUMN faculty_code_hash TEXT')
+        conn.execute(
+            'UPDATE faculty SET faculty_code_hash=? WHERE faculty_code_hash IS NULL',
+            [hashlib.sha256(b'2124').hexdigest()],
+        )
+        columns = {row[1] for row in conn.execute('PRAGMA table_info(submissions)').fetchall()}
+        for name, definition in (
+            ('file_name', 'TEXT'),
+            ('file_path', 'TEXT'),
+            ('content_type', 'TEXT'),
+            ('file_size', 'INTEGER'),
+            ('annotations_json', "TEXT NOT NULL DEFAULT '[]'"),
+        ):
+            if name not in columns:
+                conn.execute(f'ALTER TABLE submissions ADD COLUMN {name} {definition}')
 
 def query(sql: str, params: Iterable[Any] = ()) -> list[dict[str, Any]]:
     with connection() as conn:

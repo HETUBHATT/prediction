@@ -7,14 +7,8 @@ import sqlite3
 from pathlib import Path
 from uuid import uuid4
 import uvicorn
-<<<<<<< HEAD
-from fastapi import FastAPI, HTTPException, Query
-from pathlib import Path
-from fastapi.responses import FileResponse ,StreamingResponse
-=======
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
->>>>>>> 7f01a0e (new code logic api merge)
 try:
     from .db import execute, init_db, query
     from .db import DB_PATH
@@ -27,12 +21,6 @@ except ImportError:
     from services import grade, predict
 
 app = FastAPI(title='Predictive Student Academic Performance API', version='1.0.0', description='Student academic management, assessment, results, analytics, and ML risk prediction.')
-<<<<<<< HEAD
-BASE_DIR = Path(__file__).resolve().parent
-@app.get("/addstudent.html", include_in_schema=False)
-def add_student_page():
-    return FileResponse(BASE_DIR / "static" / "addstudent.html")
-=======
 UPLOAD_DIR = DB_PATH.parent / 'submissions'
 MAX_SUBMISSION_SIZE = 10 * 1024 * 1024
 ALLOWED_FILES = {
@@ -42,7 +30,6 @@ ALLOWED_FILES = {
     '.png': 'image/png',
 }
 
->>>>>>> 7f01a0e (new code logic api merge)
 @app.on_event('startup')
 def startup():
     init_db()

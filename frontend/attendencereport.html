@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Report — EduVista</title>
+
+  <!-- EduVista Master Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ==========================================
+       EDUVISTA MASTER UNIFIED STYLESHEET
+       ========================================== */
+
+    :root {
+      --bg-cream: #f4f0e6;
+      --card-white: #ffffff;
+      --text-dark: #2b382d;
+      --text-muted: #748378;
+      --sage-primary: #33503b;
+      --sage-dark: #223828;
+      --sage-light: #e6ebe3;
+      --gold-accent: #c6a664;
+      --border-color: #e5e0d5;
+      --input-bg: #faf8f4;
+      --shadow-soft: rgba(34, 56, 40, 0.08);
+      --success-bg: #e6f4ea;
+      --success-text: #137333;
+      --danger-bg: #fce8e6;
+      --danger-text: #c53929;
+      --toggle-bg: #ffffff;
+      --toggle-icon: #1c2b20;
+    }
+
+    [data-theme="dark"] {
+      --bg-cream: #141b16;
+      --card-white: #1e2820;
+      --text-dark: #e8ebe6;
+      --text-muted: #9aa89c;
+      --sage-primary: #4a7053;
+      --sage-dark: #638c6d;
+      --sage-light: #28362b;
+      --gold-accent: #d4b465;
+      --border-color: #2d3b2f;
+      --input-bg: #18221a;
+      --shadow-soft: rgba(0, 0, 0, 0.35);
+      --toggle-bg: #2d3b2f;
+      --toggle-icon: #d4b465;
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      background: var(--bg-cream);
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 0.5rem;
+      position: relative;
+    }
+
+    .ambient-glow-1, .ambient-glow-2 {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.4;
+    }
+    .ambient-glow-1 {
+      width: 250px;
+      height: 250px;
+      background: var(--gold-accent);
+      top: -40px;
+      left: -40px;
+    }
+    .ambient-glow-2 {
+      width: 280px;
+      height: 280px;
+      background: var(--sage-primary);
+      bottom: -60px;
+      right: -60px;
+    }
+
+    .card {
+      background: var(--card-white);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 1.2rem 1.8rem 1rem 1.8rem;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 10px 25px var(--shadow-soft);
+      z-index: 1;
+      position: relative;
+    }
+
+    .theme-switch-wrapper {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10;
+    }
+
+    .theme-toggle-btn {
+      background: var(--toggle-bg);
+      border: 1px solid var(--border-color);
+      color: var(--toggle-icon);
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.88rem;
+      box-shadow: 0 2px 8px var(--shadow-soft);
+      outline: none;
+    }
+
+    .theme-toggle-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .brand-logo-svg {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      min-height: 38px;
+      flex-shrink: 0;
+      display: block;
+    }
+
+    .brand-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      color: var(--sage-dark);
+      letter-spacing: -0.2px;
+    }
+
+    .card-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      color: var(--text-dark);
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .field-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--sage-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper i.input-icon {
+      position: absolute;
+      left: 0.75rem;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      pointer-events: none;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.45rem 0.75rem 0.45rem 2.1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--input-bg);
+      color: var(--text-dark);
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--sage-primary);
+      background: var(--card-white);
+      box-shadow: 0 0 0 2px rgba(51, 80, 59, 0.15);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 8px;
+      background: var(--sage-primary);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      height: 38px;
+      margin-bottom: 0.65rem;
+    }
+
+    .btn-submit:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .report-table-box {
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .table-header-row {
+      display: grid;
+      grid-template-columns: 0.9fr 1.5fr 1.1fr;
+      padding: 0.45rem 0.65rem;
+      background: var(--sage-light);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .table-header-row span {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--sage-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .report-body-container {
+      max-height: 150px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .report-body-container::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .report-body-container::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 10px;
+    }
+
+    .table-data-row {
+      display: grid;
+      grid-template-columns: 0.9fr 1.5fr 1.1fr;
+      padding: 0.45rem 0.65rem;
+      border-bottom: 1px solid var(--border-color);
+      align-items: center;
+      font-size: 0.78rem;
+      background: var(--card-white);
+    }
+
+    .table-data-row:last-child {
+      border-bottom: none;
+    }
+
+    .student-id-cell {
+      font-weight: 700;
+      color: var(--sage-dark);
+    }
+
+    .student-name-cell {
+      color: var(--text-dark);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .status-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      text-align: center;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    .status-present {
+      background: var(--success-bg);
+      color: var(--success-text);
+    }
+
+    .status-absent {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+    }
+
+    .error-display-msg {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--danger-text);
+      padding: 1.2rem 0.75rem;
+      line-height: 1.4;
+    }
+
+    .app-footer {
+      margin-top: 0.75rem;
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      z-index: 1;
+    }
+
+    @media (max-width: 576px) {
+      body {
+        padding: 0.5rem;
+      }
+      .card {
+        padding: 1rem 1rem 0.85rem 1rem;
+        border-radius: 14px;
+      }
+      .theme-switch-wrapper {
+        top: 0.75rem;
+        right: 0.75rem;
+      }
+      .theme-toggle-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 0.78rem;
+      }
+      .brand-logo-svg {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+      }
+      .brand-title {
+        font-size: 1.2rem;
+      }
+      .card-title {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Decorative Ambient Glows -->
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <div class="card">
+    <!-- Night View Toggle Control -->
+    <div class="theme-switch-wrapper">
+      <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Night View">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+      </button>
+    </div>
+
+    <!-- Exact Vector Brand Logo -->
+    <div class="brand">
+      <svg class="brand-logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="95" fill="#faf8f4" stroke="#5b6e58" stroke-width="4" />
+        <circle cx="100" cy="100" r="90" fill="none" stroke="#bfa054" stroke-width="2" />
+        <path d="M100 120 C75 105 45 110 30 115 L30 128 C45 123 75 118 100 135 C125 118 155 123 170 128 L170 115 C155 110 125 105 100 120 Z" fill="#243d2c" />
+        <path d="M100 110 C80 97 50 101 35 105 L35 115 C50 111 80 107 100 122 C120 107 150 111 165 115 L165 105 C150 101 120 97 100 110 Z" fill="#d4b465" />
+        <path d="M100 101 C83 90 55 93 40 96 L40 104 C55 101 83 98 100 111 C117 98 145 101 160 104 L160 96 C145 93 117 90 100 101 Z" fill="#e2cb91" />
+        <rect x="88" y="80" width="10" height="24" rx="2" fill="#d4b465" />
+        <rect x="103" y="72" width="10" height="32" rx="2" fill="#c4a148" />
+        <rect x="118" y="60" width="10" height="44" rx="2" fill="#6c8866" />
+        <rect x="133" y="48" width="10" height="56" rx="2" fill="#243d2c" />
+        <polygon points="100,22 138,40 100,58 62,40" fill="#243d2c" />
+        <polygon points="76,47 76,60 100,68 124,60 124,47" fill="#33503b" />
+        <path d="M100 40 L125 50 L125 64" stroke="#d4b465" stroke-width="3" stroke-linecap="round" fill="none" />
+        <circle cx="125" cy="66" r="3" fill="#d4b465" />
+        <path d="M65 82 L77 72 L90 78 L112 58 L142 36" stroke="#243d2c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <polygon points="138,32 147,32 144,41" fill="#243d2c" />
+        <circle cx="77" cy="72" r="4" fill="#faf8f4" stroke="#243d2c" stroke-width="3" />
+        <circle cx="90" cy="78" r="4" fill="#faf8f4" stroke="#243d2c" stroke-width="3" />
+        <circle cx="112" cy="58" r="4" fill="#faf8f4" stroke="#243d2c" stroke-width="3" />
+      </svg>
+      <div class="brand-title">EduVista</div>
+    </div>
+
+    <h2 class="card-title">Attendance Report</h2>
+
+    <!-- Search Records Input Field -->
+    <div class="form-group">
+      <label class="field-label" for="searchInput">Search Records</label>
+      <div class="input-wrapper">
+        <i class="fa-solid fa-magnifying-glass input-icon"></i>
+        <input type="text" id="searchInput" class="form-control" placeholder="Search by name or ID...">
+      </div>
+    </div>
+
+    <!-- Refresh Report Button -->
+    <button type="button" class="btn-submit" id="btnRefresh">
+      <i class="fa-solid fa-rotate-right"></i> Refresh Report
+    </button>
+
+    <!-- Table Container Structure -->
+    <div class="report-table-box">
+      <div class="table-header-row">
+        <span>STUDENT ID</span>
+        <span>NAME</span>
+        <span>STATUS</span>
+      </div>
+      <div class="report-body-container" id="reportDataContainer">
+        <div class="error-display-msg">
+          Unable to load data. Ensure API service is active on localhost:4009.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    &copy; 2026 EduVista Management System. All rights reserved.
+  </footer>
+
+  <script>
+    // 1. Night View (Dark Mode) Theme Engine
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeIcon = document.getElementById('themeIcon');
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      themeIcon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+      localStorage.setItem('eduvista_theme', theme);
+    }
+
+    const savedTheme = localStorage.getItem('eduvista_theme') || 
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
+
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    });
+
+    // 2. Data Fetching and Table Rendering Logic
+    let allRecords = [];
+
+    document.getElementById('btnRefresh').addEventListener('click', loadAttendanceReport);
+    document.getElementById('searchInput').addEventListener('input', filterRecords);
+
+    async function loadAttendanceReport() {
+      const btnRefresh = document.getElementById('btnRefresh');
+      const container = document.getElementById('reportDataContainer');
+
+      btnRefresh.disabled = true;
+      btnRefresh.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
+
+      try {
+        const response = await fetch('http://127.0.0.1:4009/reports/attendance', {
+          method: 'GET',
+          headers: {
+            'accept': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          allRecords = await response.json();
+          renderTableRows(allRecords);
+        } else {
+          showErrorState("Unable to load data. Ensure API service is active on localhost:4009.");
+        }
+      } catch (error) {
+        showErrorState("Unable to load data. Ensure API service is active on localhost:4009.");
+      } finally {
+        btnRefresh.disabled = false;
+        btnRefresh.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Refresh Report';
+      }
+    }
+
+    function renderTableRows(records) {
+      const container = document.getElementById('reportDataContainer');
+      if (!Array.isArray(records) || records.length === 0) {
+        container.innerHTML = `<div class="error-display-msg" style="color: var(--text-muted);">No records found.</div>`;
+        return;
+      }
+
+      container.innerHTML = records.map(item => {
+        const id = item.student_id || item.id || 'N/A';
+        const name = item.name || item.student_name || 'Student';
+        const pct = item.attendance !== undefined ? Number(item.attendance) : 0;
+        const isGood = pct >= 75;
+        const badgeClass = isGood ? 'status-present' : 'status-absent';
+
+        return `
+          <div class="table-data-row">
+            <span class="student-id-cell">#${id}</span>
+            <span class="student-name-cell" title="${name}">${name}</span>
+            <span>
+              <span class="status-badge ${badgeClass}">
+                ${pct}%
+              </span>
+            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function showErrorState(message) {
+      const container = document.getElementById('reportDataContainer');
+      container.innerHTML = `<div class="error-display-msg">${message}</div>`;
+    }
+
+    function filterRecords() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      if (!allRecords || allRecords.length === 0) return;
+
+      const filtered = allRecords.filter(item => {
+        const id = String(item.student_id || item.id || '');
+        const name = String(item.name || item.student_name || '').toLowerCase();
+        return id.includes(query) || name.includes(query);
+      });
+
+      renderTableRows(filtered);
+    }
+
+    // Auto-load report on initial load
+    loadAttendanceReport();
+  </script>
+</body>
+</html>

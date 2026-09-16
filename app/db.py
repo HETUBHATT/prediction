@@ -1,98 +1,105 @@
-import os
 import hashlib
-import sqlite3
+import os
+import re
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterable
 
-DB_PATH = Path(os.getenv("ACADEMIC_DB_PATH", "data/academic.db"))
+import psycopg
+from psycopg.rows import dict_row
 
-SCHEMA = """
-CREATE TABLE IF NOT EXISTS students (
- id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,
- department TEXT NOT NULL, semester INTEGER NOT NULL CHECK(semester BETWEEN 1 AND 8),
- phone TEXT, attendance REAL NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-CREATE TABLE IF NOT EXISTS faculty (
- id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,
- department TEXT NOT NULL, phone TEXT, faculty_code_hash TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-CREATE TABLE IF NOT EXISTS academic_records (
- id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
- subject TEXT NOT NULL, semester INTEGER NOT NULL, internal_marks REAL NOT NULL DEFAULT 0,
- test_marks REAL NOT NULL DEFAULT 0, previous_semester_marks REAL NOT NULL DEFAULT 0,
- percentile_12th REAL NOT NULL DEFAULT 0, UNIQUE(student_id, subject, semester)
-);
-CREATE TABLE IF NOT EXISTS attendance (
- id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
- subject TEXT NOT NULL, classes_held INTEGER NOT NULL, classes_attended INTEGER NOT NULL, date TEXT,
- UNIQUE(student_id, subject, date)
-);
-CREATE TABLE IF NOT EXISTS assignments (
- id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
- subject TEXT NOT NULL, title TEXT NOT NULL, due_date TEXT, status TEXT NOT NULL DEFAULT 'pending',
- score REAL, UNIQUE(student_id, subject, title)
-);
-CREATE TABLE IF NOT EXISTS tests (
- id INTEGER PRIMARY KEY AUTOINCREMENT, faculty_id INTEGER REFERENCES faculty(id), subject TEXT NOT NULL,
- title TEXT NOT NULL, total_marks REAL NOT NULL, scheduled_at TEXT, question_paper TEXT,
- created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-CREATE TABLE IF NOT EXISTS submissions (
- id INTEGER PRIMARY KEY AUTOINCREMENT, test_id INTEGER NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
- student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE, answer_paper TEXT NOT NULL,
- file_name TEXT, file_path TEXT, content_type TEXT, file_size INTEGER, annotations_json TEXT NOT NULL DEFAULT '[]',
- submitted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, score REAL, feedback TEXT, status TEXT NOT NULL DEFAULT 'submitted',
- UNIQUE(test_id, student_id)
-);
-CREATE TABLE IF NOT EXISTS results (
- id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
- subject TEXT NOT NULL, semester INTEGER NOT NULL, marks REAL NOT NULL, total_marks REAL NOT NULL DEFAULT 100,
- grade TEXT NOT NULL, published INTEGER NOT NULL DEFAULT 1, published_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-"""
+ENV_FILE = Path(__file__).resolve().parent.parent / '.env'
+if ENV_FILE.is_file():
+    for line in ENV_FILE.read_text(encoding='utf-8').splitlines():
+        line = line.strip()
+        if line and not line.startswith('#') and '=' in line:
+            name, value = line.split('=', 1)
+            os.environ.setdefault(name.strip(), value.strip().strip('"').strip("'"))
+
+DATABASE_URL = os.getenv('DATABASE_URL')
+if not DATABASE_URL:
+    raise RuntimeError('DATABASE_URL is not set. Configure the PostgreSQL connection string before starting the API.')
+IntegrityError = psycopg.IntegrityError
+
+SCHEMA = (
+    """CREATE TABLE IF NOT EXISTS students (
+        id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,
+        department TEXT NOT NULL, semester INTEGER NOT NULL CHECK(semester BETWEEN 1 AND 8),
+        phone TEXT, attendance DOUBLE PRECISION NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)""",
+    """CREATE TABLE IF NOT EXISTS faculty (
+        id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,
+        department TEXT NOT NULL, phone TEXT, faculty_code_hash TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)""",
+    """CREATE TABLE IF NOT EXISTS academic_records (
+        id SERIAL PRIMARY KEY, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+        subject TEXT NOT NULL, semester INTEGER NOT NULL, internal_marks DOUBLE PRECISION NOT NULL DEFAULT 0,
+        test_marks DOUBLE PRECISION NOT NULL DEFAULT 0, previous_semester_marks DOUBLE PRECISION NOT NULL DEFAULT 0,
+        percentile_12th DOUBLE PRECISION NOT NULL DEFAULT 0, UNIQUE(student_id, subject, semester))""",
+    """CREATE TABLE IF NOT EXISTS attendance (
+        id SERIAL PRIMARY KEY, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+        subject TEXT NOT NULL, classes_held INTEGER NOT NULL, classes_attended INTEGER NOT NULL, date TEXT,
+        UNIQUE(student_id, subject, date))""",
+    """CREATE TABLE IF NOT EXISTS assignments (
+        id SERIAL PRIMARY KEY, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+        subject TEXT NOT NULL, title TEXT NOT NULL, due_date TEXT, status TEXT NOT NULL DEFAULT 'pending',
+        score DOUBLE PRECISION, UNIQUE(student_id, subject, title))""",
+    """CREATE TABLE IF NOT EXISTS tests (
+        id SERIAL PRIMARY KEY, faculty_id INTEGER REFERENCES faculty(id), subject TEXT NOT NULL,
+        title TEXT NOT NULL, total_marks DOUBLE PRECISION NOT NULL, scheduled_at TEXT, question_paper TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)""",
+    """CREATE TABLE IF NOT EXISTS submissions (
+        id SERIAL PRIMARY KEY, test_id INTEGER NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
+        student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE, answer_paper TEXT NOT NULL,
+        file_name TEXT, file_path TEXT, content_type TEXT, file_size INTEGER,
+        annotations_json TEXT NOT NULL DEFAULT '[]', manual_marks_json TEXT NOT NULL DEFAULT '[]', submitted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        score DOUBLE PRECISION, feedback TEXT, review_mode TEXT NOT NULL DEFAULT 'manual', status TEXT NOT NULL DEFAULT 'submitted',
+        UNIQUE(test_id, student_id))""",
+    """CREATE TABLE IF NOT EXISTS results (
+        id SERIAL PRIMARY KEY, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+        subject TEXT NOT NULL, semester INTEGER NOT NULL, marks DOUBLE PRECISION NOT NULL,
+        total_marks DOUBLE PRECISION NOT NULL DEFAULT 100, grade TEXT NOT NULL, published INTEGER NOT NULL DEFAULT 1,
+        published_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)""",
+)
+
+
+def _postgres_sql(sql: str) -> str:
+    return re.sub(r'\?', '%s', sql)
+
 
 @contextmanager
 def connection():
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    try:
+    with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
         yield conn
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        conn.close()
+
 
 def init_db():
     with connection() as conn:
-        conn.executescript(SCHEMA)
-        faculty_columns = {row[1] for row in conn.execute('PRAGMA table_info(faculty)').fetchall()}
-        if 'faculty_code_hash' not in faculty_columns:
-            conn.execute('ALTER TABLE faculty ADD COLUMN faculty_code_hash TEXT')
+        for statement in SCHEMA:
+            conn.execute(statement)
+        conn.execute('ALTER TABLE faculty ADD COLUMN IF NOT EXISTS faculty_code_hash TEXT')
+        conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS file_name TEXT')
+        conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS file_path TEXT')
+        conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS content_type TEXT')
+        conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS file_size INTEGER')
+        conn.execute("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS annotations_json TEXT NOT NULL DEFAULT '[]'")
+        conn.execute("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS manual_marks_json TEXT NOT NULL DEFAULT '[]'")
+        conn.execute("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS review_mode TEXT NOT NULL DEFAULT 'manual'")
         conn.execute(
-            'UPDATE faculty SET faculty_code_hash=? WHERE faculty_code_hash IS NULL',
+            'UPDATE faculty SET faculty_code_hash=%s WHERE faculty_code_hash IS NULL',
             [hashlib.sha256(b'2124').hexdigest()],
         )
-        columns = {row[1] for row in conn.execute('PRAGMA table_info(submissions)').fetchall()}
-        for name, definition in (
-            ('file_name', 'TEXT'),
-            ('file_path', 'TEXT'),
-            ('content_type', 'TEXT'),
-            ('file_size', 'INTEGER'),
-            ('annotations_json', "TEXT NOT NULL DEFAULT '[]'"),
-        ):
-            if name not in columns:
-                conn.execute(f'ALTER TABLE submissions ADD COLUMN {name} {definition}')
+
 
 def query(sql: str, params: Iterable[Any] = ()) -> list[dict[str, Any]]:
     with connection() as conn:
-        return [dict(row) for row in conn.execute(sql, tuple(params)).fetchall()]
+        return list(conn.execute(_postgres_sql(sql), tuple(params)).fetchall())
+
 
 def execute(sql: str, params: Iterable[Any] = ()) -> dict[str, Any]:
     with connection() as conn:
-        cursor = conn.execute(sql, tuple(params))
-        return {"id": cursor.lastrowid, "affected": cursor.rowcount}
+        if sql.lstrip().upper().startswith('INSERT'):
+            row = conn.execute(_postgres_sql(sql) + ' RETURNING id', tuple(params)).fetchone()
+            return {'id': row['id'], 'affected': 1}
+        cursor = conn.execute(_postgres_sql(sql), tuple(params))
+        return {'id': None, 'affected': cursor.rowcount}

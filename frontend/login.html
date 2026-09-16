@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — EduVista</title>
+
+  <!-- EduVista Master Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ==========================================
+       EDUVISTA MASTER UNIFIED STYLESHEET
+       ========================================== */
+
+    /* 1. Global Color Palette & Theme Engine */
+    :root {
+      --bg-cream: #f4f0e6;
+      --card-white: #ffffff;
+      --text-dark: #2b382d;
+      --text-muted: #748378;
+      --sage-primary: #33503b;
+      --sage-dark: #223828;
+      --sage-light: #e6ebe3;
+      --gold-accent: #c6a664;
+      --border-color: #e5e0d5;
+      --input-bg: #faf8f4;
+      --shadow-soft: rgba(34, 56, 40, 0.08);
+      --success-bg: #e6f4ea;
+      --success-text: #137333;
+      --danger-bg: #fce8e6;
+      --danger-text: #c53929;
+      --toggle-bg: #e5e0d5;
+      --toggle-icon: #33503b;
+    }
+
+    /* Night View (Dark Mode) Theme Overrides */
+    [data-theme="dark"] {
+      --bg-cream: #141b16;
+      --card-white: #1e2820;
+      --text-dark: #e8ebe6;
+      --text-muted: #9aa89c;
+      --sage-primary: #4a7053;
+      --sage-dark: #638c6d;
+      --sage-light: #28362b;
+      --gold-accent: #d4b465;
+      --border-color: #2d3b2f;
+      --input-bg: #18221a;
+      --shadow-soft: rgba(0, 0, 0, 0.35);
+      --toggle-bg: #2d3b2f;
+      --toggle-icon: #d4b465;
+    }
+
+    /* 2. Global Resets & Page Structure */
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    body {
+      background: var(--bg-cream);
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Decorative Ambient Glows */
+    .ambient-glow-1, .ambient-glow-2 {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .ambient-glow-1 {
+      width: 300px;
+      height: 300px;
+      background: var(--gold-accent);
+      top: -50px;
+      left: -50px;
+    }
+    .ambient-glow-2 {
+      width: 350px;
+      height: 350px;
+      background: var(--sage-primary);
+      bottom: -80px;
+      right: -80px;
+    }
+
+    /* 3. Night View Floating Switcher */
+    .theme-switch-wrapper {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .theme-toggle-btn {
+      background: var(--card-white);
+      border: 1px solid var(--border-color);
+      color: var(--toggle-icon);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 12px var(--shadow-soft);
+      outline: none;
+    }
+
+    .theme-toggle-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* 4. Universal Container Card */
+    .card {
+      background: var(--card-white);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 2.5rem 2.2rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 15px 35px var(--shadow-soft);
+      z-index: 1;
+      position: relative;
+    }
+
+    /* 5. Brand Header Setup & Static Vector Logo */
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .brand-logo-svg {
+      width: 56px;
+      height: 56px;
+      min-width: 56px;
+      min-height: 56px;
+      flex-shrink: 0;
+      display: block;
+    }
+
+    .brand-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.8rem;
+      color: var(--sage-dark);
+      letter-spacing: -0.2px;
+    }
+
+    .card-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      color: var(--text-dark);
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    /* 6. Form Inputs & Control Group */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--sage-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper i.input-icon {
+      position: absolute;
+      left: 1rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      pointer-events: none;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.8rem 1rem 0.8rem 2.6rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background: var(--input-bg);
+      color: var(--text-dark);
+      font-size: 0.92rem;
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--sage-primary);
+      background: var(--card-white);
+      box-shadow: 0 0 0 3px rgba(51, 80, 59, 0.15);
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 1rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .toggle-password:hover {
+      color: var(--text-dark);
+    }
+
+    /* 7. Extra Form Controls (Remember & Forgot) */
+    .form-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      font-size: 0.82rem;
+    }
+
+    .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .remember-me input[type="checkbox"] {
+      accent-color: var(--sage-primary);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    .forgot-link {
+      color: var(--sage-primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .forgot-link:hover {
+      text-decoration: underline;
+    }
+
+    /* 8. Action Buttons */
+    .btn-submit {
+      width: 100%;
+      padding: 0.85rem 1.4rem;
+      border: none;
+      border-radius: 12px;
+      background: var(--sage-primary);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-submit:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+
+    /* 9. Alerts */
+    .alert-box {
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      margin-bottom: 1.25rem;
+      display: none;
+    }
+
+    .alert-success {
+      background: var(--success-bg);
+      color: var(--success-text);
+      border: 1px solid var(--success-text);
+    }
+
+    .alert-error {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border: 1px solid var(--danger-text);
+    }
+
+    /* 10. Universal Footer */
+    .app-footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      z-index: 1;
+    }
+
+    /* 11. Mobile Responsiveness */
+    @media (max-width: 576px) {
+      body {
+        padding: 1.5rem 1rem;
+      }
+      .theme-switch-wrapper {
+        top: 1rem;
+        right: 1rem;
+      }
+      .card {
+        padding: 1.75rem 1.4rem;
+        border-radius: 20px;
+      }
+      .brand-logo-svg {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        min-height: 48px;
+      }
+      .brand-title {
+        font-size: 1.5rem;
+      }
+      .card-title {
+        font-size: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Visual Elements -->
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <!-- Night View Toggle Control -->
+  <div class="theme-switch-wrapper">
+    <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Night View">
+      <i class="fa-solid fa-moon" id="themeIcon"></i>
+    </button>
+  </div>
+
+  <div class="card">
+    <!-- Header with Vector Logo -->
+    <div class="brand">
+      <svg class="brand-logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="95" fill="#faf8f4" stroke="#5b6e58" stroke-width="4" />
+        <circle cx="100" cy="100" r="90" fill="none" stroke="#bfa054" stroke-width="2" />
+        <path d="M100 120 C75 105 45 110 30 115 L30 128 C45 123 75 118 100 135 C125 118 155 123 170 128 L170 115 C155 110 125 105 100 120 Z" fill="#243d2c" />
+        <path d="M100 110 C80 97 50 101 35 105 L35 115 C50 111 80 107 100 122 C120 107 150 111 165 115 L165 105 C150 101 120 97 100 110 Z" fill="#d4b465" />
+        <path d="M100 101 C83 90 55 93 40 96 L40 104 C55 101 83 98 100 111 C117 98 145 101 160 104 L160 96 C145 93 117 90 100 101 Z" fill="#e2cb91" />
+        <rect x="88" y="80" width="10" height="24" rx="2" fill="#d4b465" />
+        <rect x="103" y="72" width="10" height="32" rx="2" fill="#c4a148" />
+        <rect x="118" y="60" width="10" height="44" rx="2" fill="#6c8866" />
+        <rect x="133" y="48" width="10" height="56" rx="2" fill="#243d2c" />
+        <polygon points="100,22 138,40 100,58 62,40" fill="#243d2c" />
+        <polygon points="76,47 76,60 100,68 124,60 124,47" fill="#33503b" />
+        <path d="M100 40 L125 50 L125 64" stroke="#d4b465" stroke-width="3" stroke-linecap="round" fill="none" />
+        <circle cx="125" cy="66" r="3" fill="#d4b465" />
+        <path d="M65 82 L77 72 L90 78 L112 58 L142 36" stroke="#243d2c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <polygon points="138,32 147,32 144,41" fill="#243d2c" />
+        <circle cx="77" cy="72" r="4" fill="#faf8f4" stroke="#243d2c" stroke-width="3" />
+        <circle cx="90" cy="78" r="4" fill="#faf8f4" stroke="#243d2c" stroke-width="3" />
+        <circle cx="112" cy="58" r="4" fill="#faf8f4" stroke="#243d2c" stroke-width="3" />
+      </svg>
+      <div class="brand-title">EduVista</div>
+    </div>
+
+    <h2 class="card-title">Welcome Back</h2>
+
+    <div id="alertBox" class="alert-box"></div>
+
+    <!-- Login Form -->
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="username">Username or Email</label>
+        <div class="input-wrapper">
+          <i class="fa-regular fa-envelope input-icon"></i>
+          <input type="text" id="username" class="form-control" placeholder="admin@eduvista.com" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-lock input-icon"></i>
+          <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+          <i class="fa-regular fa-eye toggle-password" id="togglePassword"></i>
+        </div>
+      </div>
+
+      <div class="form-options">
+        <label class="remember-me">
+          <input type="checkbox" id="rememberMe"> Keep me logged in
+        </label>
+        <a href="#" class="forgot-link" onclick="event.preventDefault(); showAlert('Please contact your system administrator to reset password.', 'error');">Forgot Password?</a>
+      </div>
+
+      <button type="submit" class="btn-submit">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+      </button>
+    </form>
+  </div>
+
+  <footer class="app-footer">
+    &copy; 2026 EduVista Management System. All rights reserved.
+  </footer>
+
+  <script>
+    // 1. Password Visibility Switcher
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    togglePassword.addEventListener('click', () => {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      togglePassword.classList.toggle('fa-eye');
+      togglePassword.classList.toggle('fa-eye-slash');
+    });
+
+    // 2. Night View (Dark Mode) Theme Engine
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeIcon = document.getElementById('themeIcon');
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') {
+        themeIcon.className = 'fa-solid fa-sun';
+      } else {
+        themeIcon.className = 'fa-solid fa-moon';
+      }
+      localStorage.setItem('eduvista_theme', theme);
+    }
+
+    // Load saved or system preferred theme
+    const savedTheme = localStorage.getItem('eduvista_theme') || 
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
+
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(newTheme);
+    });
+
+    // 3. Form Submission Handling
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (username && password) {
+        showAlert('Authentication successful! Redirecting...', 'success');
+      } else {
+        showAlert('Please enter both username and password.', 'error');
+      }
+    });
+
+    function showAlert(message, type) {
+      const alertBox = document.getElementById('alertBox');
+      alertBox.innerText = message;
+      alertBox.className = `alert-box alert-${type}`;
+      alertBox.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

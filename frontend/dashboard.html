@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EduVista | Academic command center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/frontend/dashboard.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+
+<body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar">
+            <div class="brand"><span class="brand-mark"><i class="fa-solid fa-leaf"></i></span><span>EduVista</span>
+            </div>
+            <p class="eyebrow">Academic command center</p>
+            <nav class="nav-list" aria-label="Main navigation">
+                <button class="nav-item active" data-view="home"><i
+                        class="fa-solid fa-grid-2"></i><span>Overview</span></button>
+                <button class="nav-item" data-view="students"><i
+                        class="fa-solid fa-user-graduate"></i><span>Students</span></button>
+                <button class="nav-item" data-view="faculty"><i
+                        class="fa-solid fa-chalkboard-user"></i><span>Faculty</span></button>
+                <button class="nav-item" data-view="tests"><i class="fa-solid fa-file-pen"></i><span>Tests &
+                        submissions</span></button>
+                <button class="nav-item" data-view="attendance"><i
+                        class="fa-solid fa-calendar-check"></i><span>Attendance</span></button>
+                <button class="nav-item" data-view="assignments"><i
+                        class="fa-solid fa-list-check"></i><span>Assignments</span></button>
+                <button class="nav-item" data-view="results"><i class="fa-solid fa-chart-line"></i><span>Results &
+                        risk</span></button>
+                <button class="nav-item" data-view="reports"><i
+                        class="fa-solid fa-file-export"></i><span>Reports</span></button>
+            </nav>
+            <div class="sidebar-footer"><a href="/docs" target="_blank"><i class="fa-solid fa-code"></i> API
+                    docs</a><button id="logoutButton"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign
+                    out</button></div>
+        </aside>
+        <main class="main-content">
+            <header class="topbar"><button class="icon-button menu-button" id="menuButton"
+                    aria-label="Open navigation"><i class="fa-solid fa-bars"></i></button>
+                <div>
+                    <p class="kicker" id="pageKicker">Good morning</p>
+                    <h1 id="pageTitle">Academic overview</h1>
+                </div>
+                <div class="top-actions"><button class="icon-button" id="themeButton" aria-label="Toggle theme"><i
+                            class="fa-solid fa-moon"></i></button>
+                    <div class="profile-pill"><span class="avatar" id="profileAvatar">EV</span><span
+                            id="profileName">Guest workspace</span></div>
+                </div>
+            </header>
+            <div id="notice" class="notice" role="status"></div>
+            <section id="view-home" class="view active-view">
+                <div class="hero">
+                    <div>
+                        <p class="eyebrow">A clearer picture of progress</p>
+                        <h2>Small signals. Better support.</h2>
+                        <p>Bring student performance, faculty review, and assessment work into one calm workspace.</p>
+                    </div>
+                    <div class="hero-orbit"><i class="fa-solid fa-seedling"></i><span>Live academic pulse</span></div>
+                </div>
+                <div class="metric-grid" id="metrics">
+                    <div class="metric-card"><span class="metric-icon sage"><i
+                                class="fa-solid fa-user-graduate"></i></span>
+                        <div><strong>--</strong><small>Students</small></div>
+                    </div>
+                    <div class="metric-card"><span class="metric-icon gold"><i
+                                class="fa-solid fa-chalkboard-user"></i></span>
+                        <div><strong>--</strong><small>Faculty</small></div>
+                    </div>
+                    <div class="metric-card"><span class="metric-icon blue"><i
+                                class="fa-solid fa-file-circle-check"></i></span>
+                        <div><strong>--</strong><small>Tests</small></div>
+                    </div>
+                    <div class="metric-card"><span class="metric-icon rose"><i
+                                class="fa-solid fa-chart-simple"></i></span>
+                        <div><strong>--</strong><small>Average marks</small></div>
+                    </div>
+                </div>
+                <div class="content-grid">
+                    <article class="panel pulse-panel">
+                        <div class="panel-heading">
+                            <div>
+                                <p class="eyebrow">Performance pulse</p>
+                                <h3>Risk snapshot</h3>
+                            </div><button class="text-button" data-view-link="results">View details <i
+                                    class="fa-solid fa-arrow-up-right-from-square"></i></button>
+                        </div>
+                        <div class="risk-bars" id="riskBars">
+                            <div class="empty-state">Loading the latest student signals...</div>
+                        </div>
+                    </article>
+                    <article class="panel quick-panel">
+                        <div class="panel-heading">
+                            <div>
+                                <p class="eyebrow">Shortcuts</p>
+                                <h3>Move work forward</h3>
+                            </div>
+                        </div>
+                        <div class="quick-grid"><button class="quick-action" data-view-link="students"><i
+                                    class="fa-solid fa-user-plus"></i><span>Add student</span></button><button
+                                class="quick-action" data-view-link="tests"><i
+                                    class="fa-solid fa-cloud-arrow-up"></i><span>Submit paper</span></button><button
+                                class="quick-action" data-view-link="attendance"><i
+                                    class="fa-solid fa-calendar-plus"></i><span>Record attendance</span></button><button
+                                class="quick-action" data-view-link="reports"><i
+                                    class="fa-solid fa-download"></i><span>Export report</span></button></div>
+                    </article>
+                </div>
+            </section>
+            <section id="view-students" class="view">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Student management</p>
+                        <h2>Students</h2>
+                    </div><button class="primary-button" data-open-form="studentForm"><i class="fa-solid fa-plus"></i>
+                        Add student</button>
+                </div>
+                <div class="content-grid">
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <h3>Student directory</h3><button class="icon-button small" data-refresh="students"><i
+                                    class="fa-solid fa-rotate"></i></button>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Department</th>
+                                        <th>Semester</th>
+                                        <th>Attendance</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTable">
+                                    <tr>
+                                        <td colspan="5" class="empty-state">Loading students...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </article>
+                    <article class="panel form-panel" id="studentForm">
+                        <div class="panel-heading">
+                            <h3>Add a student</h3>
+                        </div>
+                        <form data-api-form="student">
+                            <div class="field-grid"><label>Name<input name="name" required minlength="2"
+                                        placeholder="Aarav Sharma"></label><label>Email<input name="email" type="email"
+                                        required placeholder="student@campus.edu"></label><label>Department<input
+                                        name="department" required
+                                        placeholder="Computer Science"></label><label>Semester<input name="semester"
+                                        type="number" min="1" max="8" required
+                                        placeholder="3"></label><label>Phone<input name="phone"
+                                        placeholder="Optional"></label><label>Attendance<input name="attendance"
+                                        type="number" min="0" max="100" value="0"></label></div><button
+                                class="primary-button" type="submit">Save student</button>
+                        </form>
+                    </article>
+                </div>
+            </section>
+            <section id="view-faculty" class="view">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Faculty management</p>
+                        <h2>Faculty directory</h2>
+                    </div><button class="primary-button" data-open-form="facultyForm"><i class="fa-solid fa-plus"></i>
+                        Add faculty</button>
+                </div>
+                <div class="content-grid">
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <h3>Registered faculty</h3><button class="icon-button small" data-refresh="faculty"><i
+                                    class="fa-solid fa-rotate"></i></button>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Department</th>
+                                        <th>Phone</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="facultyTable">
+                                    <tr>
+                                        <td colspan="4" class="empty-state">Loading faculty...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </article>
+                    <article class="panel form-panel" id="facultyForm">
+                        <div class="panel-heading">
+                            <h3>Register faculty</h3>
+                        </div>
+                        <p class="helper">The shared faculty access code is <strong>2124</strong>.</p>
+                        <form data-api-form="faculty">
+                            <div class="field-grid"><label>Name<input name="name" required minlength="2"
+                                        placeholder="Dr. Meera Shah"></label><label>Email<input name="email"
+                                        type="email" required
+                                        placeholder="faculty@campus.edu"></label><label>Department<input
+                                        name="department" required
+                                        placeholder="Computer Science"></label><label>Phone<input name="phone"
+                                        placeholder="Optional"></label><input type="hidden" name="faculty_code"
+                                    value="2124"></div><button class="primary-button" type="submit">Register
+                                faculty</button>
+                        </form>
+                    </article>
+                </div>
+            </section>
+            <section id="view-tests" class="view">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Assessment desk</p>
+                        <h2>Tests & submissions</h2>
+                    </div><button class="primary-button" data-open-form="testForm"><i class="fa-solid fa-plus"></i>
+                        Schedule test</button>
+                </div>
+                <div class="content-grid">
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <h3>Scheduled tests</h3><button class="icon-button small" data-refresh="tests"><i
+                                    class="fa-solid fa-rotate"></i></button>
+                        </div>
+                        <div id="testsList" class="stack-list">
+                            <div class="empty-state">Loading tests...</div>
+                        </div>
+                    </article>
+                    <article class="panel form-panel" id="testForm">
+                        <div class="panel-heading">
+                            <h3>Schedule an assessment</h3>
+                        </div>
+                        <form data-api-form="test">
+                            <div class="field-grid"><label>Faculty ID<input name="faculty_id" type="number"
+                                        placeholder="Optional"></label><label>Subject<input name="subject" required
+                                        placeholder="Mathematics"></label><label class="wide">Title<input name="title"
+                                        required placeholder="Mid-term assessment"></label><label>Total marks<input
+                                        name="total_marks" type="number" min="1" required
+                                        value="100"></label><label>Scheduled at<input name="scheduled_at"
+                                        type="datetime-local"></label></div><button class="primary-button"
+                                type="submit">Schedule test</button>
+                        </form>
+                    </article>
+                </div>
+                <article class="panel upload-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">Student workspace</p>
+                            <h3>Upload answer paper</h3>
+                        </div><span class="file-note">PDF, JPG, JPEG, PNG · max 10 MB</span>
+                    </div>
+                    <form data-api-form="submission" class="upload-form"><label>Test ID<input name="test_id"
+                                type="number" required placeholder="Test ID"></label><label>Student ID<input
+                                name="student_id" type="number" required placeholder="Student ID"></label><label
+                            class="file-picker"><i class="fa-solid fa-paperclip"></i><span>Choose answer
+                                file</span><input name="file" type="file" accept=".pdf,.jpg,.jpeg,.png"
+                                required></label><button class="primary-button" type="submit">Upload submission</button>
+                    </form>
+                </article>
+                <article class="panel review-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">Faculty workspace</p>
+                            <h3>Manual paper review</h3>
+                        </div>
+                        <span class="file-note">Draw on the PDF, zoom, then save</span>
+                    </div>
+                    <div class="review-picker">
+                        <label>Submission<select id="submissionSelect">
+                                <option value="">Load submissions...</option>
+                            </select></label>
+                        <button class="secondary-button" id="loadSubmissionButton" type="button"><i
+                                class="fa-solid fa-eye"></i> Open paper</button>
+                    </div>
+                    <div class="review-toolbar" aria-label="Manual review tools">
+                        <button class="icon-button small" id="zoomOutButton" type="button" title="Zoom out"
+                            aria-label="Zoom out"><i class="fa-solid fa-minus"></i></button>
+                        <strong id="zoomLabel">100%</strong>
+                        <button class="icon-button small" id="zoomInButton" type="button" title="Zoom in"
+                            aria-label="Zoom in"><i class="fa-solid fa-plus"></i></button>
+                        <span class="toolbar-divider"></span>
+                        <button class="tool-button active" id="penToolButton" type="button"><i
+                                class="fa-solid fa-pen"></i> Pen</button>
+                        <button class="tool-button" id="correctToolButton" type="button" title="Mark correct answer"><i
+                                class="fa-solid fa-check"></i> Correct</button>
+                        <button class="tool-button" id="wrongToolButton" type="button" title="Mark wrong answer"><i
+                                class="fa-solid fa-xmark"></i> Wrong</button>
+                        <button class="tool-button" id="commentToolButton" type="button"
+                            title="Add comment inside paper"><i class="fa-solid fa-comment"></i> Comment</button>
+                        <button class="tool-button" id="clearMarksButton" type="button"><i
+                                class="fa-solid fa-eraser"></i> Clear marks</button>
+                        <span class="review-status" id="reviewStatus">No paper selected</span>
+                    </div>
+                    <div id="pdfViewer" class="pdf-viewer">
+                        <div class="empty-state">Select a submission to begin manual review.</div>
+                    </div>
+                    <div class="paper-marking-sheet">
+                        <div class="marking-sheet-heading">
+                            <div>
+                                <p class="eyebrow">Paper marking sheet</p>
+                                <h4>Question checks</h4>
+                            </div>
+                            <strong>Total marks = <span id="marksTotal">0</span></strong>
+                        </div>
+                        <div class="marking-layout">
+                            <label class="question-count-field">Questions<input id="questionCount" type="number" min="1"
+                                    max="100" value="3"></label>
+                            <div id="questionMarks" class="question-marks"></div>
+                        </div>
+                    </div>
+                    <div class="review-fields">
+                        <label>Score<input id="reviewScore" type="number" min="0" step="0.5"
+                                placeholder="Optional"></label>
+                        <label class="wide">Feedback<textarea id="reviewFeedback" rows="3" maxlength="4000"
+                                placeholder="Add feedback for the student"></textarea></label>
+                        <button class="primary-button" id="saveReviewButton" type="button"><i
+                                class="fa-solid fa-floppy-disk"></i> Save manual review</button>
+                    </div>
+                </article>
+            </section>
+            <section id="view-attendance" class="view">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Attendance management</p>
+                        <h2>Attendance</h2>
+                    </div>
+                </div>
+                <div class="content-grid">
+                    <article class="panel form-panel">
+                        <div class="panel-heading">
+                            <h3>Record attendance</h3>
+                        </div>
+                        <form data-api-form="attendance">
+                            <div class="field-grid"><label>Student ID<input name="student_id" type="number"
+                                        required></label><label>Subject<input name="subject"
+                                        required></label><label>Classes held<input name="classes_held" type="number"
+                                        min="1" required></label><label>Classes attended<input name="classes_attended"
+                                        type="number" min="0" required></label><label>Date<input name="date"
+                                        type="date"></label></div><button class="primary-button" type="submit">Save
+                                attendance</button>
+                        </form>
+                    </article>
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <h3>Student attendance</h3>
+                        </div>
+                        <form class="inline-form" data-lookup="attendance"><input name="student_id" type="number"
+                                required placeholder="Student ID"><button class="secondary-button">View</button></form>
+                        <div id="attendanceResults" class="stack-list"></div>
+                    </article>
+                </div>
+            </section>
+            <section id="view-assignments" class="view">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Assignment tracking</p>
+                        <h2>Assignments</h2>
+                    </div>
+                </div>
+                <div class="content-grid">
+                    <article class="panel form-panel">
+                        <div class="panel-heading">
+                            <h3>Create assignment</h3>
+                        </div>
+                        <form data-api-form="assignment">
+                            <div class="field-grid"><label>Student ID<input name="student_id" type="number"
+                                        required></label><label>Subject<input name="subject" required></label><label
+                                    class="wide">Title<input name="title" required></label><label>Due date<input
+                                        name="due_date" type="date"></label><label>Status<select name="status">
+                                        <option>pending</option>
+                                        <option>submitted</option>
+                                        <option>graded</option>
+                                    </select></label><label>Score<input name="score" type="number" min="0"
+                                        max="100"></label></div><button class="primary-button" type="submit">Save
+                                assignment</button>
+                        </form>
+                    </article>
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <h3>Student assignments</h3>
+                        </div>
+                        <form class="inline-form" data-lookup="assignments"><input name="student_id" type="number"
+                                required placeholder="Student ID"><button class="secondary-button">View</button></form>
+                        <div id="assignmentResults" class="stack-list"></div>
+                    </article>
+                </div>
+            </section>
+            <section id="view-results" class="view">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Academic outcomes</p>
+                        <h2>Results & risk</h2>
+                    </div>
+                </div>
+                <div class="content-grid">
+                    <article class="panel form-panel">
+                        <div class="panel-heading">
+                            <h3>Generate result</h3>
+                        </div>
+                        <form data-api-form="result">
+                            <div class="field-grid"><label>Student ID<input name="student_id" type="number"
+                                        required></label><label>Subject<input name="subject"
+                                        required></label><label>Semester<input name="semester" type="number" min="1"
+                                        max="8" required></label><label>Marks<input name="marks" type="number" min="0"
+                                        required></label><label>Total marks<input name="total_marks" type="number"
+                                        min="1" value="100" required></label></div><button class="primary-button"
+                                type="submit">Publish result</button>
+                        </form>
+                    </article>
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <h3>Student risk profile</h3>
+                        </div>
+                        <form class="inline-form" data-lookup="risk"><input name="student_id" type="number" required
+                                placeholder="Student ID"><button class="secondary-button">Analyze</button></form>
+                        <div id="riskResult" class="risk-result"></div>
+                    </article>
+                </div>
+            </section>
+            <section id="view-reports" class="view">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Reports & insight</p>
+                        <h2>Reports</h2>
+                    </div>
+                </div>
+                <div class="report-grid"><button class="report-card" data-report="overview"><i
+                            class="fa-solid fa-chart-pie"></i><strong>Overview analytics</strong><span>Refresh the live
+                            academic pulse.</span></button><button class="report-card" data-report="risk"><i
+                            class="fa-solid fa-triangle-exclamation"></i><strong>At-risk students</strong><span>See
+                            students who need support.</span></button><button class="report-card"
+                        data-report="attendance"><i class="fa-solid fa-calendar-days"></i><strong>Attendance
+                            report</strong><span>Review attendance across the cohort.</span></button><button
+                        class="report-card" data-report="csv"><i class="fa-solid fa-file-csv"></i><strong>Export results
+                            CSV</strong><span>Download a spreadsheet-ready report.</span></button></div>
+                <div class="panel report-output" id="reportOutput">
+                    <div class="empty-state">Choose a report to load its data.</div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-card">
+            <div class="brand"><span class="brand-mark"><i class="fa-solid fa-leaf"></i></span><span>EduVista</span>
+            </div>
+            <p class="eyebrow">Welcome back</p>
+            <h2>Open your academic workspace.</h2>
+            <p class="login-copy">Choose your role to continue. Faculty access uses the registered email and static code
+                2124.</p>
+            <form id="loginForm"><label>Role<select name="role" id="loginRole">
+                        <option value="student">Student</option>
+                        <option value="faculty">Faculty</option>
+                    </select></label><label>Email<input name="email" type="email" required
+                        placeholder="you@campus.edu"></label><label id="facultyCodeField" class="hidden">Faculty
+                    code<input name="faculty_code" inputmode="numeric" pattern="2124" maxlength="4"
+                        placeholder="2124"></label><button class="primary-button" type="submit">Enter workspace <i
+                        class="fa-solid fa-arrow-right"></i></button></form><button class="guest-button"
+                id="guestButton">Continue as a viewer</button>
+            <p id="loginError" class="form-error"></p>
+        </div>
+    </div>
+    <script src="/frontend/dashboard.js"></script>
+</body>
+
+</html>

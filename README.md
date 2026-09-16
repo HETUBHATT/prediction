@@ -13,7 +13,21 @@ python main.py
 
 Open Swagger UI at <http://127.0.0.1:4009/docs>.
 
-SQLite data is stored in `data/academic.db`. Set `ACADEMIC_DB_PATH` to use another database path.
+The API uses PostgreSQL. Set `DATABASE_URL` before starting the app, for example:
+
+```powershell
+$env:DATABASE_URL = "postgresql://postgres:<password>@localhost:5432/prediction"
+python app/main.py
+```
+
+Uploaded submission files remain on disk under `data/submissions` by default. Set `UPLOAD_DIR` to change that location.
+
+To migrate the existing SQLite database into PostgreSQL, create the PostgreSQL database first, set `DATABASE_URL`, and run:
+
+```powershell
+$env:DATABASE_URL = "postgresql://postgres:password@localhost:5432/academic"
+python migrate_sqlite_to_postgres.py
+```
 
 ## Main endpoint groups
 

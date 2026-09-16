@@ -3,25 +3,26 @@ import csv
 import hashlib
 import hmac
 import json
-import sqlite3
+import os
 from pathlib import Path
 from uuid import uuid4
 import uvicorn
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 try:
-    from .db import execute, init_db, query
-    from .db import DB_PATH
-    from .schemas import AcademicRecordCreate, AssignmentCreate, AttendanceCreate, CorrectionRequest, FacultyCreate, FacultyLogin, LoginRequest, PenAnnotation, ResultCreate, StudentCreate, StudentUpdate, TestCreate
+    from .db import IntegrityError, execute, init_db, query
+    from .schemas import AcademicRecordCreate, AssignmentCreate, AttendanceCreate, CorrectionRequest, FacultyCreate, FacultyLogin, LoginRequest, ManualReviewSave, PenAnnotation, ResultCreate, StudentCreate, StudentUpdate, TestCreate
     from .services import grade, predict
 except ImportError:
-    from db import execute, init_db, query
-    from db import DB_PATH
-    from schemas import AcademicRecordCreate, AssignmentCreate, AttendanceCreate, CorrectionRequest, FacultyCreate, FacultyLogin, LoginRequest, PenAnnotation, ResultCreate, StudentCreate, StudentUpdate, TestCreate
+    from db import IntegrityError, execute, init_db, query
+    from schemas import AcademicRecordCreate, AssignmentCreate, AttendanceCreate, CorrectionRequest, FacultyCreate, FacultyLogin, LoginRequest, ManualReviewSave, PenAnnotation, ResultCreate, StudentCreate, StudentUpdate, TestCreate
     from services import grade, predict
 
 app = FastAPI(title='Predictive Student Academic Performance API', version='1.0.0', description='Student academic management, assessment, results, analytics, and ML risk prediction.')
-UPLOAD_DIR = DB_PATH.parent / 'submissions'
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / 'frontend'
+app.mount('/frontend', StaticFiles(directory=FRONTEND_DIR), name='frontend')
+UPLOAD_DIR = Path(os.getenv('UPLOAD_DIR', 'data/submissions'))
 MAX_SUBMISSION_SIZE = 10 * 1024 * 1024
 ALLOWED_FILES = {
     '.pdf': 'application/pdf',
@@ -29,10 +30,18 @@ ALLOWED_FILES = {
     '.jpeg': 'image/jpeg',
     '.png': 'image/png',
 }
-
+0
 @app.on_event('startup')
 def startup():
     init_db()
+
+@app.get('/', include_in_schema=False)
+def home():
+    return RedirectResponse('/dashboard')
+
+@app.get('/dashboard', include_in_schema=False)
+def dashboard():
+    return FileResponse(FRONTEND_DIR / 'dashboard.html')
 
 def one_or_404(sql: str, params=(), label='Resource'):
     rows = query(sql, params)
@@ -42,7 +51,7 @@ def one_or_404(sql: str, params=(), label='Resource'):
 def create(sql: str, params, fetch_sql: str, label='Resource'):
     try:
         result = execute(sql, params)
-    except sqlite3.IntegrityError as exc:
+    except IntegrityError as exc:
         raise HTTPException(409, f'{label} conflicts with an existing record') from exc
     return one_or_404(fetch_sql, [result['id']], label)
 
@@ -79,7 +88,7 @@ def view_student(student_id: int):
 def update_student(student_id: int, payload: StudentUpdate):
     one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student')
     try: execute('UPDATE students SET name=?,email=?,department=?,semester=?,phone=?,attendance=? WHERE id=?', [*payload.model_dump().values(), student_id])
-    except sqlite3.IntegrityError as exc: raise HTTPException(409, 'Email already belongs to another student') from exc
+    except IntegrityError as exc: raise HTTPException(409, 'Email already belongs to another student') from exc
     return view_student(student_id)
 
 @app.delete('/students/{student_id}', tags=['Student Management'])
@@ -137,7 +146,7 @@ def record_attendance(payload: AttendanceCreate):
 
 @app.get('/attendance/student/{student_id}', tags=['Attendance Management'])
 def view_attendance(student_id: int):
-    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT subject,SUM(classes_held) classes_held,SUM(classes_attended) classes_attended,ROUND(SUM(classes_attended)*100.0/SUM(classes_held),2) attendance_percentage FROM attendance WHERE student_id=? GROUP BY subject', [student_id])
+    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT subject,SUM(classes_held) classes_held,SUM(classes_attended) classes_attended,ROUND((SUM(classes_attended)*100.0/SUM(classes_held))::numeric,2) attendance_percentage FROM attendance WHERE student_id=? GROUP BY subject', [student_id])
 
 @app.post('/assignments', tags=['Assignment Tracking'])
 def add_assignment(payload: AssignmentCreate):
@@ -182,7 +191,7 @@ async def upload_test_paper(test_id: int, student_id: int = Form(...), file: Upl
             'INSERT INTO submissions(test_id,student_id,answer_paper,file_name,file_path,content_type,file_size) VALUES(?,?,?,?,?,?,?)',
             [test_id, student_id, stored_name, file.filename, str(stored_path), file.content_type, len(contents)],
         )
-    except sqlite3.IntegrityError as exc:
+    except IntegrityError as exc:
         stored_path.unlink(missing_ok=True)
         raise HTTPException(409, 'Student already submitted this test') from exc
     return one_or_404('SELECT id,test_id,student_id,file_name,content_type,file_size,submitted_at,status FROM submissions WHERE id=?', [result['id']], 'Submission')
@@ -191,7 +200,7 @@ async def upload_test_paper(test_id: int, student_id: int = Form(...), file: Upl
 def list_submissions(faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$'), test_id: int | None = None, student_id: int | None = None):
     faculty_from_credentials(faculty_id, faculty_code)
     if test_id: faculty_test(test_id, faculty_id)
-    sql = 'SELECT s.id,s.test_id,s.student_id,s.file_name,s.content_type,s.file_size,s.submitted_at,s.score,s.feedback,s.status FROM submissions s JOIN tests t ON t.id=s.test_id WHERE (t.faculty_id=? OR t.faculty_id IS NULL)'
+    sql = 'SELECT s.id,s.test_id,s.student_id,s.file_name,s.content_type,s.file_size,s.submitted_at,s.score,s.feedback,s.review_mode,s.status FROM submissions s JOIN tests t ON t.id=s.test_id WHERE (t.faculty_id=? OR t.faculty_id IS NULL)'
     params = [faculty_id]
     if test_id: sql += ' AND s.test_id=?'; params.append(test_id)
     if student_id: sql += ' AND s.student_id=?'; params.append(student_id)
@@ -203,6 +212,7 @@ def review_submission(submission_id: int, faculty_id: int = Query(..., gt=0), fa
     faculty_from_credentials(faculty_id, faculty_code)
     faculty_test(submission['test_id'], faculty_id)
     submission['annotations'] = json.loads(submission.pop('annotations_json') or '[]')
+    submission['marks'] = json.loads(submission.pop('manual_marks_json') or '[]')
     return submission
 
 @app.get('/submissions/{submission_id}/file', tags=['Faculty Submission Review'], response_class=FileResponse)
@@ -223,6 +233,25 @@ def annotate_submission(submission_id: int, payload: PenAnnotation, faculty_id: 
     annotations.append(payload.model_dump())
     execute('UPDATE submissions SET annotations_json=?,status=? WHERE id=?', [json.dumps(annotations), 'in_review', submission_id])
     return {'submission_id': submission_id, 'annotations': annotations, 'status': 'in_review'}
+
+@app.put('/submissions/{submission_id}/manual-review', tags=['Faculty Submission Review'])
+def save_manual_review(submission_id: int, payload: ManualReviewSave, faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$')):
+    submission = one_or_404('SELECT s.*,t.total_marks FROM submissions s JOIN tests t ON t.id=s.test_id WHERE s.id=?', [submission_id], 'Submission')
+    faculty_from_credentials(faculty_id, faculty_code)
+    faculty_test(submission['test_id'], faculty_id)
+    if payload.score is not None and payload.score > submission['total_marks']:
+        raise HTTPException(422, 'Score cannot exceed total marks')
+    annotations = [annotation.model_dump() for annotation in payload.annotations]
+    marks = [mark.model_dump() for mark in payload.marks]
+    status = 'corrected' if payload.score is not None else 'in_review'
+    execute(
+        'UPDATE submissions SET annotations_json=?,manual_marks_json=?,score=?,feedback=?,review_mode=?,status=? WHERE id=?',
+        [json.dumps(annotations), json.dumps(marks), payload.score, payload.feedback, payload.review_mode, status, submission_id],
+    )
+    saved = one_or_404('SELECT * FROM submissions WHERE id=?', [submission_id], 'Submission')
+    saved['annotations'] = json.loads(saved.pop('annotations_json') or '[]')
+    saved['marks'] = json.loads(saved.pop('manual_marks_json') or '[]')
+    return saved
 
 @app.post('/submissions/{submission_id}/correct', tags=['Automatic Test Evaluation'])
 def correct_test(submission_id: int, payload: CorrectionRequest, faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$')):
@@ -255,7 +284,7 @@ def dashboard_overview(department: str | None = None):
     for student in students:
         try: risks.append(predict(student['id'])['risk'])
         except ValueError: pass
-    return {'total_students': len(students), 'total_faculty': query('SELECT COUNT(*) count FROM faculty')[0]['count'], 'total_tests': query('SELECT COUNT(*) count FROM tests')[0]['count'], 'risk_counts': {level: risks.count(level) for level in ('Low', 'Medium', 'High')}, 'average_marks': query('SELECT ROUND(AVG(marks / total_marks * 100),2) average FROM results')[0]['average']}
+    return {'total_students': len(students), 'total_faculty': query('SELECT COUNT(*) count FROM faculty')[0]['count'], 'total_tests': query('SELECT COUNT(*) count FROM tests')[0]['count'], 'risk_counts': {level: risks.count(level) for level in ('Low', 'Medium', 'High')}, 'average_marks': query('SELECT ROUND((AVG(marks / total_marks * 100))::numeric,2) average FROM results')[0]['average']}
 
 @app.get('/analytics/at-risk-students', tags=['Dashboard Analytics'])
 def at_risk_students(risk: str = Query('High', pattern='^(Low|Medium|High)$')):
@@ -277,7 +306,7 @@ def student_performance_report(student_id: int):
 def risk_report(): return at_risk_students('High') + at_risk_students('Medium')
 
 @app.get('/reports/attendance', tags=['Reports'])
-def attendance_report(): return query('SELECT s.id student_id,s.name,s.department,ROUND(COALESCE(SUM(a.classes_attended)*100.0/NULLIF(SUM(a.classes_held),0),s.attendance),2) attendance_percentage FROM students s LEFT JOIN attendance a ON a.student_id=s.id GROUP BY s.id ORDER BY attendance_percentage')
+def attendance_report(): return query('SELECT s.id student_id,s.name,s.department,ROUND((COALESCE(SUM(a.classes_attended)*100.0/NULLIF(SUM(a.classes_held),0),s.attendance))::numeric,2) attendance_percentage FROM students s LEFT JOIN attendance a ON a.student_id=s.id GROUP BY s.id ORDER BY attendance_percentage')
 
 @app.get('/reports/export.csv', tags=['Reports'])
 

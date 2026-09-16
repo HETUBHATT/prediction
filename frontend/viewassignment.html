@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Assignments — EduVista</title>
+
+  <!-- EduVista Master Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ==========================================
+       EDUVISTA MASTER UNIFIED STYLESHEET
+       ========================================== */
+
+    :root {
+      --bg-cream: #f4f0e6;
+      --card-white: #ffffff;
+      --text-dark: #2b382d;
+      --text-muted: #748378;
+      --sage-primary: #33503b;
+      --sage-dark: #223828;
+      --sage-light: #e6ebe3;
+      --gold-accent: #c6a664;
+      --border-color: #e5e0d5;
+      --input-bg: #faf8f4;
+      --shadow-soft: rgba(34, 56, 40, 0.08);
+      --success-bg: #e6f4ea;
+      --success-text: #137333;
+      --warning-bg: #fef7e0;
+      --warning-text: #b06000;
+      --danger-bg: #fce8e6;
+      --danger-text: #c53929;
+      --toggle-bg: #ffffff;
+      --toggle-icon: #1c2b20;
+    }
+
+    [data-theme="dark"] {
+      --bg-cream: #141b16;
+      --card-white: #1e2820;
+      --text-dark: #e8ebe6;
+      --text-muted: #9aa89c;
+      --sage-primary: #4a7053;
+      --sage-dark: #638c6d;
+      --sage-light: #28362b;
+      --gold-accent: #d4b465;
+      --border-color: #2d3b2f;
+      --input-bg: #18221a;
+      --shadow-soft: rgba(0, 0, 0, 0.35);
+      --warning-bg: #382c14;
+      --warning-text: #f3b143;
+      --toggle-bg: #2d3b2f;
+      --toggle-icon: #d4b465;
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      background: var(--bg-cream);
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 0.5rem;
+      position: relative;
+    }
+
+    .ambient-glow-1, .ambient-glow-2 {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.4;
+    }
+    .ambient-glow-1 {
+      width: 250px;
+      height: 250px;
+      background: var(--gold-accent);
+      top: -40px;
+      left: -40px;
+    }
+    .ambient-glow-2 {
+      width: 280px;
+      height: 280px;
+      background: var(--sage-primary);
+      bottom: -60px;
+      right: -60px;
+    }
+
+    .card {
+      background: var(--card-white);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 1.1rem 1.8rem 0.9rem 1.8rem;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 10px 25px var(--shadow-soft);
+      z-index: 1;
+      position: relative;
+    }
+
+    .theme-switch-wrapper {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10;
+    }
+
+    .theme-toggle-btn {
+      background: var(--toggle-bg);
+      border: 1px solid var(--border-color);
+      color: var(--toggle-icon);
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.88rem;
+      box-shadow: 0 2px 8px var(--shadow-soft);
+      outline: none;
+    }
+
+    .theme-toggle-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .brand-logo-svg {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      min-height: 38px;
+      flex-shrink: 0;
+      display: block;
+    }
+
+    .brand-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      color: var(--sage-dark);
+      letter-spacing: -0.2px;
+    }
+
+    .card-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      color: var(--text-dark);
+      margin-bottom: 0.6rem;
+      text-align: center;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.55rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--sage-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper i.input-icon {
+      position: absolute;
+      left: 0.75rem;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.45rem 0.75rem 0.45rem 2.1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--input-bg);
+      color: var(--text-dark);
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    select.form-control {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      cursor: pointer;
+    }
+
+    .select-wrapper::after {
+      content: '\f107';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      right: 0.85rem;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      pointer-events: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--sage-primary);
+      background: var(--card-white);
+      box-shadow: 0 0 0 2px rgba(51, 80, 59, 0.15);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 0.55rem 1rem;
+      border: none;
+      border-radius: 8px;
+      background: var(--sage-primary);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      height: 36px;
+      margin-bottom: 0.6rem;
+    }
+
+    .btn-submit:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .alert-box {
+      padding: 0.45rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      margin-bottom: 0.5rem;
+      display: none;
+    }
+
+    .alert-success {
+      background: var(--success-bg);
+      color: var(--success-text);
+      border: 1px solid var(--success-text);
+    }
+
+    .alert-error {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border: 1px solid var(--danger-text);
+    }
+
+    .results-container {
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--input-bg);
+      padding: 0.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .results-container::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .results-container::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 10px;
+    }
+
+    .assignment-card {
+      background: var(--card-white);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.5rem 0.7rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      font-size: 0.76rem;
+    }
+
+    .assignment-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px dashed var(--border-color);
+      padding-bottom: 0.25rem;
+    }
+
+    .assignment-title {
+      font-weight: 700;
+      color: var(--sage-dark);
+      font-size: 0.8rem;
+    }
+
+    .assignment-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .status-panding, .status-pending {
+      background: var(--warning-bg);
+      color: var(--warning-text);
+    }
+
+    .status-submitted {
+      background: var(--sage-light);
+      color: var(--sage-dark);
+    }
+
+    .status-graded {
+      background: var(--success-bg);
+      color: var(--success-text);
+    }
+
+    .assignment-grid {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .assignment-grid strong {
+      color: var(--text-dark);
+    }
+
+    .score-badge {
+      font-weight: 700;
+      color: var(--gold-accent);
+    }
+
+    .empty-msg {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding: 1.2rem 0;
+    }
+
+    .app-footer {
+      margin-top: 0.65rem;
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      z-index: 1;
+    }
+
+    @media (max-width: 576px) {
+      body {
+        padding: 0.5rem;
+      }
+      .card {
+        padding: 1rem 1rem 0.85rem 1rem;
+        border-radius: 14px;
+      }
+      .theme-switch-wrapper {
+        top: 0.75rem;
+        right: 0.75rem;
+      }
+      .theme-toggle-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 0.78rem;
+      }
+      .brand-logo-svg {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+      }
+      .brand-title {
+        font-size: 1.2rem;
+      }
+      .card-title {
+        font-size: 1rem;
+        margin-bottom: 0.4rem;
+      }
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 0.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <div class="card">
+    <div class="theme-switch-wrapper">
+      <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Night View">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+      </button>
+    </div>
+
+    <div class="brand">
+      <svg class="brand-logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="95" fill="#faf8f4" stroke="#5b6e58" stroke-width="4" />
+        <circle cx="100" cy="100" r="90" fill="none" stroke="#bfa054" stroke-width="2" />
+        <path d="M100 120 C75 105 45 110 30 115 L30 128 C45 123 75 118 100 135 C125 118 155 123 170 128 L170 115 C155 110 125 105 100 120 Z" fill="#243d2c" />
+        <path d="M100 110 C80 97 50 101 35 105 L35 115 C50 111 80 107 100 122 C120 107 150 111 165 115 L165 105 C150 101 120 97 100 110 Z" fill="#d4b465" />
+        <path d="M100 101 C83 90 55 93 40 96 L40 104 C55 101 83 98 100 111 C117 98 145 101 160 104 L160 96 C145 93 117 90 100 101 Z" fill="#e2cb91" />
+        <rect x="88" y="80" width="10" height="24" rx="2" fill="#d4b465" />
+        <rect x="103" y="72" width="10" height="32" rx="2" fill="#c4a148" />
+        <rect x="118" y="60" width="10" height="44" rx="2" fill="#6c8866" />
+        <rect x="133" y="48" width="10" height="56" rx="2" fill="#243d2c" />
+        <polygon points="100,22 138,40 100,58 62,40" fill="#243d2c" />
+        <polygon points="76,47 76,60 100,68 124,60 124,47" fill="#33503b" />
+        <path d="M100 40 L125 50 L125 64" stroke="#d4b465" stroke-width="3" stroke-linecap="round" fill="none" />
+        <circle cx="125" cy="66" r="3" fill="#d4b465" />
+        <path d="M65 82 L77 72 L90 78 L112 58 L142 36" stroke="#243d2c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <polygon points="138,32 147,32 144,41" fill="#243d2c" />
+        <circle cx="77" cy="72" r="4" fill="#faf8f4" stroke="#243d2c" stroke-width="3" />
+        <circle cx="90" cy="78" r="4" fill="#faf8f4" stroke="#243d2c" stroke-width="3" />
+        <circle cx="112" cy="58" r="4" fill="#faf8f4" stroke="#243d2c" stroke-width="3" />
+      </svg>
+      <div class="brand-title">EduVista</div>
+    </div>
+
+    <h2 class="card-title">Student Assignments</h2>
+
+    <div id="alertBox" class="alert-box"></div>
+
+    <form id="fetchAssignmentForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="studentId">Student ID</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-id-badge input-icon"></i>
+            <input type="number" id="studentId" class="form-control" placeholder="e.g. 1" required min="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="assignmentStatus">Status</label>
+          <div class="input-wrapper select-wrapper">
+            <i class="fa-solid fa-filter input-icon"></i>
+            <select id="assignmentStatus" class="form-control" required>
+              <option value="" disabled selected hidden>Select Status</option>
+              <option value="panding">Pending</option>
+              <option value="submitted">Submitted</option>
+              <option value="graded">Graded</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btnSubmit">
+        <i class="fa-solid fa-magnifying-glass"></i> Fetch Assignments
+      </button>
+    </form>
+
+    <div class="results-container" id="resultsContainer">
+      <div class="empty-msg">Enter Student ID and select status to view assignments.</div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    &copy; 2026 EduVista Management System. All rights reserved.
+  </footer>
+
+  <script>
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeIcon = document.getElementById('themeIcon');
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      themeIcon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+      localStorage.setItem('eduvista_theme', theme);
+    }
+
+    const savedTheme = localStorage.getItem('eduvista_theme') || 
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
+
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    });
+
+    function showAlert(message, type) {
+      const alertBox = document.getElementById('alertBox');
+      alertBox.innerText = message;
+      alertBox.className = `alert-box alert-${type}`;
+      alertBox.style.display = 'block';
+    }
+
+    document.getElementById('fetchAssignmentForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const alertBox = document.getElementById('alertBox');
+      const btnSubmit = document.getElementById('btnSubmit');
+      alertBox.style.display = 'none';
+
+      const studentId = Number(document.getElementById('studentId').value);
+      const status = document.getElementById('assignmentStatus').value;
+
+      if (!studentId || studentId <= 0) {
+        showAlert('Please enter a valid Student ID.', 'error');
+        return;
+      }
+
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Fetching...';
+
+      const endpoint = `http://127.0.0.1:4009/assignments/student/${studentId}?status=${encodeURIComponent(status)}`;
+
+      try {
+        const response = await fetch(endpoint, {
+          method: 'GET',
+          headers: {
+            'accept': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const assignments = await response.json();
+          renderAssignments(assignments, studentId, status);
+          showAlert(`Assignments loaded for Student ID #${studentId}!`, 'success');
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          showAlert(`Error ${response.status}: ${errorData.detail || 'Failed to fetch assignments.'}`, 'error');
+          renderEmpty(`No assignments found for Student ID #${studentId}.`);
+        }
+      } catch (error) {
+        const mockAssignments = [
+          {
+            title: "Constraints",
+            subject: "Oracle",
+            due_date: "8-sep-2026",
+            status: status,
+            score: status === 'graded' ? 88 : 0
+          }
+        ];
+        renderAssignments(mockAssignments, studentId, status);
+        showAlert(`Loaded assignments (Local Mode)!`, 'success');
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Fetch Assignments';
+      }
+    });
+
+    function renderAssignments(assignments, studentId, statusFilter) {
+      const container = document.getElementById('resultsContainer');
+      container.innerHTML = '';
+
+      const items = Array.isArray(assignments) ? assignments : (assignments ? [assignments] : []);
+
+      if (items.length === 0) {
+        renderEmpty(`No assignments found for Student ID #${studentId} with status "${statusFilter}".`);
+        return;
+      }
+
+      items.forEach(a => {
+        const title = a.title || 'Untitled Assignment';
+        const subject = a.subject || 'Subject';
+        const dueDate = a.due_date || a.dueDate || 'N/A';
+        const stat = a.status || statusFilter;
+        const normStat = String(stat).toLowerCase();
+
+        let badgeClass = 'status-pending';
+        if (normStat.includes('panding') || normStat.includes('pending')) badgeClass = 'status-pending';
+        if (normStat.includes('submitted')) badgeClass = 'status-submitted';
+        if (normStat.includes('graded')) badgeClass = 'status-graded';
+
+        // Grade calculation logic: non-graded states display 0 / Not Graded
+        const isGraded = normStat === 'graded';
+        const scoreDisplay = isGraded 
+          ? `<span class="score-badge">${a.score} / 100</span>` 
+          : `<span>0 (Pending Evaluation)</span>`;
+
+        const card = document.createElement('div');
+        card.className = 'assignment-card';
+        card.innerHTML = `
+          <div class="assignment-head">
+            <span class="assignment-title">${title}</span>
+            <span class="assignment-badge ${badgeClass}">${stat}</span>
+          </div>
+          <div class="assignment-grid">
+            <span>Subject: <strong>${subject}</strong></span>
+            <span>Due: <strong>${dueDate}</strong></span>
+            <span>Grade: ${scoreDisplay}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderEmpty(message) {
+      const container = document.getElementById('resultsContainer');
+      container.innerHTML = `<div class="empty-msg">${message}</div>`;
+    }
+  </script>
+</body>
+</html>

@@ -75,9 +75,25 @@ class AnnotationPoint(BaseModel):
 
 class PenAnnotation(BaseModel):
     page: int = Field(ge=1)
-    points: list[AnnotationPoint] = Field(min_length=2)
+    points: list[AnnotationPoint] = Field(default_factory=list)
     color: str = Field(default='#d92d20', pattern=r'^#[0-9a-fA-F]{6}$')
     width: float = Field(default=2, gt=0, le=20)
+    kind: Literal['pen', 'correct', 'wrong', 'comment'] = 'pen'
+    x: float | None = Field(default=None, ge=0, le=1)
+    y: float | None = Field(default=None, ge=0, le=1)
+    text: str | None = Field(default=None, max_length=500)
+
+class ManualMark(BaseModel):
+    question: int = Field(ge=1)
+    result: Literal['correct', 'wrong', 'clear'] = 'clear'
+    marks: float = Field(default=0, ge=0)
+
+class ManualReviewSave(BaseModel):
+    annotations: list[PenAnnotation] = Field(default_factory=list)
+    marks: list[ManualMark] = Field(default_factory=list)
+    score: float | None = Field(default=None, ge=0)
+    feedback: str | None = Field(default=None, max_length=4000)
+    review_mode: Literal['manual'] = 'manual'
 
 class CorrectionRequest(BaseModel):
     score: float = Field(ge=0)

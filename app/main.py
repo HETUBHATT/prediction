@@ -55,7 +55,6 @@ def hash_password(password: str) -> str:
     digest = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 210_000)
     return f'pbkdf2_sha256$210000${salt.hex()}${digest.hex()}'
 
-
 def verify_password(password: str, encoded: str | None) -> bool:
     if not encoded or not encoded.startswith('pbkdf2_sha256$'):
         return False
@@ -334,6 +333,27 @@ def add_semester_assignments(payload: SemesterAssignmentCreate):
 def view_assignments(student_id: int, status: str | None = None):
     one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT * FROM assignments WHERE student_id=? AND status=?' if status else 'SELECT * FROM assignments WHERE student_id=?', [student_id, status] if status else [student_id])
 
+@app.post('/student/me/submit-assignment', tags=['Student Portal'])
+async def student_submit_assignment(request: Request, assignment_id: int = Form(...), file: UploadFile = File(...)):
+    user = require_roles(request, 'student')
+    assignment = one_or_404('SELECT * FROM assignments WHERE id=? AND student_id=?', [assignment_id, user['account_id']], 'Assignment')
+    suffix = Path(file.filename or '').suffix.lower()
+    if suffix not in ALLOWED_FILES or file.content_type != ALLOWED_FILES[suffix]:
+        raise HTTPException(415, 'Assignment must be a PDF, JPG, JPEG, or PNG file')
+    contents = await file.read(MAX_SUBMISSION_SIZE + 1)
+    if len(contents) > MAX_SUBMISSION_SIZE:
+        raise HTTPException(413, 'Assignment file must be 10 MB or smaller')
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    stored_path = UPLOAD_DIR / f'{uuid4().hex}{suffix}'
+    stored_path.write_bytes(contents)
+    if assignment['submission_file_path']:
+        Path(assignment['submission_file_path']).unlink(missing_ok=True)
+    execute(
+        'UPDATE assignments SET status=?,submission_file_name=?,submission_file_path=?,submission_content_type=?,submission_file_size=?,submitted_at=CURRENT_TIMESTAMP WHERE id=?',
+        ['submitted', file.filename, str(stored_path), file.content_type, len(contents), assignment_id],
+    )
+    return one_or_404('SELECT id,student_id,subject,title,status,submission_file_name,submission_file_size,submitted_at FROM assignments WHERE id=?', [assignment_id], 'Assignment')
+
 @app.post('/tests', tags=['Online Test Management'])
 def schedule_test(payload: TestCreate):
     if payload.faculty_id: one_or_404('SELECT id FROM faculty WHERE id=?', [payload.faculty_id], 'Faculty')
@@ -549,11 +569,25 @@ def student_me_dashboard(request: Request):
     results = query('SELECT * FROM results WHERE student_id=? ORDER BY semester,subject', [sid])
     assignments = query('SELECT * FROM assignments WHERE student_id=? ORDER BY due_date DESC LIMIT 5', [sid])
     tests = query('SELECT t.id,t.subject,t.title,t.total_marks,t.scheduled_at,s.score,s.status,s.submitted_at FROM tests t LEFT JOIN submissions s ON s.test_id=t.id AND s.student_id=? ORDER BY t.created_at DESC LIMIT 10', [sid])
+    counts = {
+        'assignments': query('SELECT COUNT(*) count FROM assignments WHERE student_id=?', [sid])[0]['count'],
+        'pending_assignments': query("SELECT COUNT(*) count FROM assignments WHERE student_id=? AND status='pending'", [sid])[0]['count'],
+        'submitted_assignments': query("SELECT COUNT(*) count FROM assignments WHERE student_id=? AND status IN ('submitted','graded')", [sid])[0]['count'],
+        'tests': query('SELECT COUNT(*) count FROM tests')[0]['count'],
+        'attendance_subjects': len(attendance),
+    }
     try:
         prediction = predict_student_risk(sid)
     except HTTPException:
         prediction = None
-    return {'student': student, 'attendance': attendance, 'results': results, 'assignments': assignments, 'tests': tests, 'prediction': prediction}
+    return {'student': student, 'attendance': attendance, 'results': results, 'assignments': assignments, 'tests': tests, 'counts': counts, 'prediction': prediction}
+
+@app.post('/student/me/attendance', tags=['Student Portal'])
+def student_submit_attendance(payload: AttendanceCreate, request: Request):
+    user = require_roles(request, 'student')
+    if payload.student_id != user['account_id']:
+        raise HTTPException(403, 'Students can only record their own attendance')
+    return record_attendance(payload, request)
 
 @app.get('/student/me/report', tags=['Student Portal'])
 def student_me_report(request: Request):
@@ -620,6 +654,15 @@ async def student_submit_test(request: Request, test_id: int = Form(...), file: 
         stored_path.unlink(missing_ok=True)
         raise HTTPException(409, 'You have already submitted this test') from exc
     return one_or_404('SELECT id,test_id,student_id,file_name,content_type,file_size,submitted_at,status FROM submissions WHERE id=?', [result['id']], 'Submission')
+
+@app.get('/student/me/submissions', tags=['Student Portal'])
+def student_submissions(request: Request):
+    user = require_roles(request, 'student')
+    return query(
+        'SELECT s.id,s.test_id,s.student_id,s.file_name,s.content_type,s.file_size,s.submitted_at,s.score,s.feedback,s.status,t.subject,t.title,t.total_marks '
+        'FROM submissions s JOIN tests t ON t.id=s.test_id WHERE s.student_id=? ORDER BY s.submitted_at DESC',
+        [user['account_id']],
+    )
 
 if __name__ == '__main__':
     configured_port = os.getenv('APP_PORT')

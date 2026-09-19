@@ -1,14 +1,5 @@
 [
     {
-        "label": "hashlib",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "hashlib",
-        "description": "hashlib",
-        "detail": "hashlib",
-        "documentation": {}
-    },
-    {
         "label": "os",
         "kind": 6,
         "isExtraImport": true,
@@ -32,6 +23,14 @@
         "description": "contextlib",
         "isExtraImport": true,
         "detail": "contextlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
         "documentation": {}
     },
     {
@@ -141,6 +140,15 @@
         "documentation": {}
     },
     {
+        "label": "hashlib",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "hashlib",
+        "description": "hashlib",
+        "detail": "hashlib",
+        "documentation": {}
+    },
+    {
         "label": "hmac",
         "kind": 6,
         "isExtraImport": true,
@@ -159,6 +167,42 @@
         "documentation": {}
     },
     {
+        "label": "secrets",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "secrets",
+        "description": "secrets",
+        "detail": "secrets",
+        "documentation": {}
+    },
+    {
+        "label": "smtplib",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "smtplib",
+        "description": "smtplib",
+        "detail": "smtplib",
+        "documentation": {}
+    },
+    {
+        "label": "socket",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "socket",
+        "description": "socket",
+        "detail": "socket",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
         "label": "uuid4",
         "importPath": "uuid",
         "description": "uuid",
@@ -173,6 +217,22 @@
         "importPath": "uvicorn",
         "description": "uvicorn",
         "detail": "uvicorn",
+        "documentation": {}
+    },
+    {
+        "label": "load_dotenv",
+        "importPath": "dotenv",
+        "description": "dotenv",
+        "isExtraImport": true,
+        "detail": "dotenv",
+        "documentation": {}
+    },
+    {
+        "label": "load_dotenv",
+        "importPath": "dotenv",
+        "description": "dotenv",
+        "isExtraImport": true,
+        "detail": "dotenv",
         "documentation": {}
     },
     {
@@ -209,6 +269,14 @@
     },
     {
         "label": "Query",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "Request",
         "importPath": "fastapi",
         "description": "fastapi",
         "isExtraImport": true,
@@ -297,6 +365,14 @@
         "documentation": {}
     },
     {
+        "label": "EmailMessage",
+        "importPath": "email.message",
+        "description": "email.message",
+        "isExtraImport": true,
+        "detail": "email.message",
+        "documentation": {}
+    },
+    {
         "label": "sqlite3",
         "kind": 6,
         "isExtraImport": true,
@@ -326,7 +402,7 @@
         "kind": 2,
         "importPath": "app.db",
         "description": "app.db",
-        "peekOfCode": "def connection():\n    with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:\n        yield conn\ndef init_db():\n    with connection() as conn:\n        for statement in SCHEMA:\n            conn.execute(statement)\n        conn.execute('ALTER TABLE faculty ADD COLUMN IF NOT EXISTS faculty_code_hash TEXT')\n        conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS file_name TEXT')\n        conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS file_path TEXT')",
+        "peekOfCode": "def connection():\n    with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:\n        yield conn\ndef init_db():\n    with connection() as conn:\n        for statement in SCHEMA:\n            conn.execute(statement)\n        conn.execute('ALTER TABLE faculty ADD COLUMN IF NOT EXISTS faculty_code_hash TEXT')\n        conn.execute('ALTER TABLE faculty ADD COLUMN IF NOT EXISTS password_hash TEXT')\n        conn.execute('ALTER TABLE students ADD COLUMN IF NOT EXISTS password_hash TEXT')",
         "detail": "app.db",
         "documentation": {}
     },
@@ -335,7 +411,7 @@
         "kind": 2,
         "importPath": "app.db",
         "description": "app.db",
-        "peekOfCode": "def init_db():\n    with connection() as conn:\n        for statement in SCHEMA:\n            conn.execute(statement)\n        conn.execute('ALTER TABLE faculty ADD COLUMN IF NOT EXISTS faculty_code_hash TEXT')\n        conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS file_name TEXT')\n        conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS file_path TEXT')\n        conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS content_type TEXT')\n        conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS file_size INTEGER')\n        conn.execute(\"ALTER TABLE submissions ADD COLUMN IF NOT EXISTS annotations_json TEXT NOT NULL DEFAULT '[]'\")",
+        "peekOfCode": "def init_db():\n    with connection() as conn:\n        for statement in SCHEMA:\n            conn.execute(statement)\n        conn.execute('ALTER TABLE faculty ADD COLUMN IF NOT EXISTS faculty_code_hash TEXT')\n        conn.execute('ALTER TABLE faculty ADD COLUMN IF NOT EXISTS password_hash TEXT')\n        conn.execute('ALTER TABLE students ADD COLUMN IF NOT EXISTS password_hash TEXT')\n        conn.execute('ALTER TABLE assignments ADD COLUMN IF NOT EXISTS submission_file_name TEXT')\n        conn.execute('ALTER TABLE assignments ADD COLUMN IF NOT EXISTS submission_file_path TEXT')\n        conn.execute('ALTER TABLE assignments ADD COLUMN IF NOT EXISTS submission_content_type TEXT')",
         "detail": "app.db",
         "documentation": {}
     },
@@ -344,7 +420,7 @@
         "kind": 2,
         "importPath": "app.db",
         "description": "app.db",
-        "peekOfCode": "def query(sql: str, params: Iterable[Any] = ()) -> list[dict[str, Any]]:\n    with connection() as conn:\n        return list(conn.execute(_postgres_sql(sql), tuple(params)).fetchall())\ndef execute(sql: str, params: Iterable[Any] = ()) -> dict[str, Any]:\n    with connection() as conn:\n        if sql.lstrip().upper().startswith('INSERT'):\n            row = conn.execute(_postgres_sql(sql) + ' RETURNING id', tuple(params)).fetchone()\n            return {'id': row['id'], 'affected': 1}\n        cursor = conn.execute(_postgres_sql(sql), tuple(params))\n        return {'id': None, 'affected': cursor.rowcount}",
+        "peekOfCode": "def query(sql: str, params: Iterable[Any] = ()) -> list[dict[str, Any]]:\n    with connection() as conn:\n        return list(conn.execute(_postgres_sql(sql), tuple(params)).fetchall())\ndef execute(sql: str, params: Iterable[Any] = ()) -> dict[str, Any]:\n    with connection() as conn:\n        if sql.lstrip().upper().startswith('INSERT') and 'AUTH_SESSIONS' not in sql.upper():\n            row = conn.execute(_postgres_sql(sql) + ' RETURNING id', tuple(params)).fetchone()\n            return {'id': row['id'], 'affected': 1}\n        cursor = conn.execute(_postgres_sql(sql), tuple(params))\n        return {'id': None, 'affected': cursor.rowcount}",
         "detail": "app.db",
         "documentation": {}
     },
@@ -353,7 +429,7 @@
         "kind": 2,
         "importPath": "app.db",
         "description": "app.db",
-        "peekOfCode": "def execute(sql: str, params: Iterable[Any] = ()) -> dict[str, Any]:\n    with connection() as conn:\n        if sql.lstrip().upper().startswith('INSERT'):\n            row = conn.execute(_postgres_sql(sql) + ' RETURNING id', tuple(params)).fetchone()\n            return {'id': row['id'], 'affected': 1}\n        cursor = conn.execute(_postgres_sql(sql), tuple(params))\n        return {'id': None, 'affected': cursor.rowcount}",
+        "peekOfCode": "def execute(sql: str, params: Iterable[Any] = ()) -> dict[str, Any]:\n    with connection() as conn:\n        if sql.lstrip().upper().startswith('INSERT') and 'AUTH_SESSIONS' not in sql.upper():\n            row = conn.execute(_postgres_sql(sql) + ' RETURNING id', tuple(params)).fetchone()\n            return {'id': row['id'], 'affected': 1}\n        cursor = conn.execute(_postgres_sql(sql), tuple(params))\n        return {'id': None, 'affected': cursor.rowcount}",
         "detail": "app.db",
         "documentation": {}
     },
@@ -380,7 +456,7 @@
         "kind": 5,
         "importPath": "app.db",
         "description": "app.db",
-        "peekOfCode": "IntegrityError = psycopg.IntegrityError\nSCHEMA = (\n    \"\"\"CREATE TABLE IF NOT EXISTS students (\n        id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,\n        department TEXT NOT NULL, semester INTEGER NOT NULL CHECK(semester BETWEEN 1 AND 8),\n        phone TEXT, attendance DOUBLE PRECISION NOT NULL DEFAULT 0,\n        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)\"\"\",\n    \"\"\"CREATE TABLE IF NOT EXISTS faculty (\n        id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,\n        department TEXT NOT NULL, phone TEXT, faculty_code_hash TEXT,",
+        "peekOfCode": "IntegrityError = psycopg.IntegrityError\nSCHEMA = (\n    \"\"\"CREATE TABLE IF NOT EXISTS students (\n        id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,\n        department TEXT NOT NULL, semester INTEGER NOT NULL CHECK(semester BETWEEN 1 AND 8),\n        phone TEXT, attendance DOUBLE PRECISION NOT NULL DEFAULT 0,\n        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)\"\"\",\n    \"\"\"CREATE TABLE IF NOT EXISTS faculty (\n        id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,\n        department TEXT NOT NULL, phone TEXT, faculty_code_hash TEXT, password_hash TEXT,",
         "detail": "app.db",
         "documentation": {}
     },
@@ -389,8 +465,44 @@
         "kind": 5,
         "importPath": "app.db",
         "description": "app.db",
-        "peekOfCode": "SCHEMA = (\n    \"\"\"CREATE TABLE IF NOT EXISTS students (\n        id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,\n        department TEXT NOT NULL, semester INTEGER NOT NULL CHECK(semester BETWEEN 1 AND 8),\n        phone TEXT, attendance DOUBLE PRECISION NOT NULL DEFAULT 0,\n        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)\"\"\",\n    \"\"\"CREATE TABLE IF NOT EXISTS faculty (\n        id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,\n        department TEXT NOT NULL, phone TEXT, faculty_code_hash TEXT,\n        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)\"\"\",",
+        "peekOfCode": "SCHEMA = (\n    \"\"\"CREATE TABLE IF NOT EXISTS students (\n        id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,\n        department TEXT NOT NULL, semester INTEGER NOT NULL CHECK(semester BETWEEN 1 AND 8),\n        phone TEXT, attendance DOUBLE PRECISION NOT NULL DEFAULT 0,\n        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)\"\"\",\n    \"\"\"CREATE TABLE IF NOT EXISTS faculty (\n        id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,\n        department TEXT NOT NULL, phone TEXT, faculty_code_hash TEXT, password_hash TEXT,\n        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)\"\"\",",
         "detail": "app.db",
+        "documentation": {}
+    },
+    {
+        "label": "generate_faculty_code",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def generate_faculty_code() -> str:\n    return f'FAC-{secrets.token_hex(3).upper()}'\ndef hash_password(password: str) -> str:\n    salt = secrets.token_bytes(16)\n    digest = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 210_000)\n    return f'pbkdf2_sha256$210000${salt.hex()}${digest.hex()}'\ndef verify_password(password: str, encoded: str | None) -> bool:\n    if not encoded or not encoded.startswith('pbkdf2_sha256$'):\n        return False\n    try:",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "hash_password",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def hash_password(password: str) -> str:\n    salt = secrets.token_bytes(16)\n    digest = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 210_000)\n    return f'pbkdf2_sha256$210000${salt.hex()}${digest.hex()}'\ndef verify_password(password: str, encoded: str | None) -> bool:\n    if not encoded or not encoded.startswith('pbkdf2_sha256$'):\n        return False\n    try:\n        _, rounds, salt_hex, digest_hex = encoded.split('$')\n        digest = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), bytes.fromhex(salt_hex), int(rounds))",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "verify_password",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def verify_password(password: str, encoded: str | None) -> bool:\n    if not encoded or not encoded.startswith('pbkdf2_sha256$'):\n        return False\n    try:\n        _, rounds, salt_hex, digest_hex = encoded.split('$')\n        digest = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), bytes.fromhex(salt_hex), int(rounds))\n        return hmac.compare_digest(digest.hex(), digest_hex)\n    except (ValueError, TypeError):\n        return False\ndef make_student_name_from_email(email: str) -> str:",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "make_student_name_from_email",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def make_student_name_from_email(email: str) -> str:\n    return email.split('@', 1)[0].replace('.', ' ').replace('_', ' ').title()\n@app.on_event('startup')\ndef startup():\n    init_db()\n@app.get('/', include_in_schema=False)\ndef home():\n    return RedirectResponse('/dashboard')\n@app.get('/dashboard', include_in_schema=False)\ndef dashboard():",
+        "detail": "app.main",
         "documentation": {}
     },
     {
@@ -434,16 +546,34 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def create(sql: str, params, fetch_sql: str, label='Resource'):\n    try:\n        result = execute(sql, params)\n    except IntegrityError as exc:\n        raise HTTPException(409, f'{label} conflicts with an existing record') from exc\n    return one_or_404(fetch_sql, [result['id']], label)\ndef hash_faculty_code(code: str) -> str:\n    return hashlib.sha256(code.encode()).hexdigest()\ndef faculty_from_credentials(faculty_id: int, faculty_code: str) -> dict:\n    faculty = one_or_404('SELECT id,name,email,department,phone,faculty_code_hash FROM faculty WHERE id=?', [faculty_id], 'Faculty')",
+        "peekOfCode": "def create(sql: str, params, fetch_sql: str, label='Resource'):\n    try:\n        result = execute(sql, params)\n    except IntegrityError as exc:\n        raise HTTPException(409, f'{label} conflicts with an existing record') from exc\n    return one_or_404(fetch_sql, [result['id']], label)\ndef session_user(token: str) -> dict:\n    rows = query('SELECT token,role,account_id,email,expires_at FROM auth_sessions WHERE token=? AND expires_at > CURRENT_TIMESTAMP', [token])\n    if not rows:\n        raise HTTPException(401, 'Authentication has expired')",
         "detail": "app.main",
         "documentation": {}
     },
     {
-        "label": "hash_faculty_code",
+        "label": "session_user",
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def hash_faculty_code(code: str) -> str:\n    return hashlib.sha256(code.encode()).hexdigest()\ndef faculty_from_credentials(faculty_id: int, faculty_code: str) -> dict:\n    faculty = one_or_404('SELECT id,name,email,department,phone,faculty_code_hash FROM faculty WHERE id=?', [faculty_id], 'Faculty')\n    if not faculty['faculty_code_hash'] or not hmac.compare_digest(faculty['faculty_code_hash'], hash_faculty_code(faculty_code)):\n        raise HTTPException(401, 'Invalid faculty credentials')\n    faculty.pop('faculty_code_hash', None)\n    return faculty\n@app.get('/health', tags=['System'])\ndef health():",
+        "peekOfCode": "def session_user(token: str) -> dict:\n    rows = query('SELECT token,role,account_id,email,expires_at FROM auth_sessions WHERE token=? AND expires_at > CURRENT_TIMESTAMP', [token])\n    if not rows:\n        raise HTTPException(401, 'Authentication has expired')\n    row = rows[0]\n    return {'role': row['role'], 'account_id': row['account_id'], 'email': row['email'], 'token': row['token']}\ndef current_user(request: Request) -> dict:\n    header = request.headers.get('Authorization', '')\n    if not header.startswith('Bearer '):\n        raise HTTPException(401, 'Authentication required')",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "current_user",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def current_user(request: Request) -> dict:\n    header = request.headers.get('Authorization', '')\n    if not header.startswith('Bearer '):\n        raise HTTPException(401, 'Authentication required')\n    return session_user(header[7:].strip())\ndef require_roles(request: Request, *roles: str) -> dict:\n    user = current_user(request)\n    if user['role'] not in roles:\n        raise HTTPException(403, 'You do not have permission to perform this action')\n    return user",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "require_roles",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def require_roles(request: Request, *roles: str) -> dict:\n    user = current_user(request)\n    if user['role'] not in roles:\n        raise HTTPException(403, 'You do not have permission to perform this action')\n    return user\ndef faculty_from_credentials(faculty_id: int, auth_token: str) -> dict:\n    user = session_user(auth_token)\n    if user['role'] != 'faculty' or user['account_id'] != faculty_id:\n        raise HTTPException(403, 'Faculty access is not authorized for this account')\n    return one_or_404('SELECT id,name,email,department,phone FROM faculty WHERE id=?', [faculty_id], 'Faculty')",
         "detail": "app.main",
         "documentation": {}
     },
@@ -452,7 +582,16 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def faculty_from_credentials(faculty_id: int, faculty_code: str) -> dict:\n    faculty = one_or_404('SELECT id,name,email,department,phone,faculty_code_hash FROM faculty WHERE id=?', [faculty_id], 'Faculty')\n    if not faculty['faculty_code_hash'] or not hmac.compare_digest(faculty['faculty_code_hash'], hash_faculty_code(faculty_code)):\n        raise HTTPException(401, 'Invalid faculty credentials')\n    faculty.pop('faculty_code_hash', None)\n    return faculty\n@app.get('/health', tags=['System'])\ndef health():\n    return {'status': 'ok', 'service': 'academic-performance-api'}\n@app.post('/students', tags=['Student Management'])",
+        "peekOfCode": "def faculty_from_credentials(faculty_id: int, auth_token: str) -> dict:\n    user = session_user(auth_token)\n    if user['role'] != 'faculty' or user['account_id'] != faculty_id:\n        raise HTTPException(403, 'Faculty access is not authorized for this account')\n    return one_or_404('SELECT id,name,email,department,phone FROM faculty WHERE id=?', [faculty_id], 'Faculty')\n@app.middleware('http')\nasync def enforce_api_access(request: Request, call_next):\n    path = request.url.path\n    public = path in {'/health', '/login', '/auth/signup', '/auth/request-otp', '/auth/verify-otp'} or path.startswith('/frontend') or path in {'/', '/dashboard', '/student/signup', '/student/portal'} or path.startswith('/docs') or path.startswith('/openapi')\n    if public:",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "admin_access",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def admin_access(email: str) -> bool:\n    return email.lower() in ADMIN_EMAILS\n@app.get('/health', tags=['System'])\ndef health():\n    return {'status': 'ok', 'service': 'academic-performance-api'}\n@app.post('/students', tags=['Student Management'])\ndef add_student(payload: StudentCreate, request: Request):\n    require_roles(request, 'admin', 'faculty')\n    values = payload.model_dump()\n    values['password_hash'] = hash_password(values.pop('password'))",
         "detail": "app.main",
         "documentation": {}
     },
@@ -461,7 +600,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def health():\n    return {'status': 'ok', 'service': 'academic-performance-api'}\n@app.post('/students', tags=['Student Management'])\ndef add_student(payload: StudentCreate):\n    return create('INSERT INTO students(name,email,department,semester,phone,attendance) VALUES(?,?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM students WHERE id=?', 'Student')\n@app.get('/students', tags=['Student Management'])\ndef view_student_list(department: str | None = None, semester: int | None = Query(None, ge=1, le=8)):\n    sql, params = 'SELECT * FROM students WHERE 1=1', []\n    if department: sql += ' AND department=?'; params.append(department)\n    if semester: sql += ' AND semester=?'; params.append(semester)",
+        "peekOfCode": "def health():\n    return {'status': 'ok', 'service': 'academic-performance-api'}\n@app.post('/students', tags=['Student Management'])\ndef add_student(payload: StudentCreate, request: Request):\n    require_roles(request, 'admin', 'faculty')\n    values = payload.model_dump()\n    values['password_hash'] = hash_password(values.pop('password'))\n    return create('INSERT INTO students(name,email,department,semester,phone,attendance,password_hash) VALUES(?,?,?,?,?,?,?)', values.values(), 'SELECT id,name,email,department,semester,phone,attendance FROM students WHERE id=?', 'Student')\n@app.get('/students', tags=['Student Management'])\ndef view_student_list(department: str | None = None, semester: int | None = Query(None, ge=1, le=8)):",
         "detail": "app.main",
         "documentation": {}
     },
@@ -470,7 +609,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def add_student(payload: StudentCreate):\n    return create('INSERT INTO students(name,email,department,semester,phone,attendance) VALUES(?,?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM students WHERE id=?', 'Student')\n@app.get('/students', tags=['Student Management'])\ndef view_student_list(department: str | None = None, semester: int | None = Query(None, ge=1, le=8)):\n    sql, params = 'SELECT * FROM students WHERE 1=1', []\n    if department: sql += ' AND department=?'; params.append(department)\n    if semester: sql += ' AND semester=?'; params.append(semester)\n    return query(sql + ' ORDER BY name', params)\n@app.get('/students/{student_id}', tags=['Student Management'])\ndef view_student(student_id: int):",
+        "peekOfCode": "def add_student(payload: StudentCreate, request: Request):\n    require_roles(request, 'admin', 'faculty')\n    values = payload.model_dump()\n    values['password_hash'] = hash_password(values.pop('password'))\n    return create('INSERT INTO students(name,email,department,semester,phone,attendance,password_hash) VALUES(?,?,?,?,?,?,?)', values.values(), 'SELECT id,name,email,department,semester,phone,attendance FROM students WHERE id=?', 'Student')\n@app.get('/students', tags=['Student Management'])\ndef view_student_list(department: str | None = None, semester: int | None = Query(None, ge=1, le=8)):\n    sql, params = 'SELECT * FROM students WHERE 1=1', []\n    if department: sql += ' AND department=?'; params.append(department)\n    if semester: sql += ' AND semester=?'; params.append(semester)",
         "detail": "app.main",
         "documentation": {}
     },
@@ -479,7 +618,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def view_student_list(department: str | None = None, semester: int | None = Query(None, ge=1, le=8)):\n    sql, params = 'SELECT * FROM students WHERE 1=1', []\n    if department: sql += ' AND department=?'; params.append(department)\n    if semester: sql += ' AND semester=?'; params.append(semester)\n    return query(sql + ' ORDER BY name', params)\n@app.get('/students/{student_id}', tags=['Student Management'])\ndef view_student(student_id: int):\n    return one_or_404('SELECT * FROM students WHERE id=?', [student_id], 'Student')\n@app.put('/students/{student_id}', tags=['Student Management'])\ndef update_student(student_id: int, payload: StudentUpdate):",
+        "peekOfCode": "def view_student_list(department: str | None = None, semester: int | None = Query(None, ge=1, le=8)):\n    sql, params = 'SELECT * FROM students WHERE 1=1', []\n    if department: sql += ' AND department=?'; params.append(department)\n    if semester: sql += ' AND semester=?'; params.append(semester)\n    return query(sql + ' ORDER BY name', params)\n@app.get('/students/{student_id}', tags=['Student Management'])\ndef view_student(student_id: int):\n    return one_or_404('SELECT id,name,email,department,semester,phone,attendance,created_at FROM students WHERE id=?', [student_id], 'Student')\n@app.put('/students/{student_id}', tags=['Student Management'])\ndef update_student(student_id: int, payload: StudentUpdate):",
         "detail": "app.main",
         "documentation": {}
     },
@@ -488,7 +627,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def view_student(student_id: int):\n    return one_or_404('SELECT * FROM students WHERE id=?', [student_id], 'Student')\n@app.put('/students/{student_id}', tags=['Student Management'])\ndef update_student(student_id: int, payload: StudentUpdate):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student')\n    try: execute('UPDATE students SET name=?,email=?,department=?,semester=?,phone=?,attendance=? WHERE id=?', [*payload.model_dump().values(), student_id])\n    except IntegrityError as exc: raise HTTPException(409, 'Email already belongs to another student') from exc\n    return view_student(student_id)\n@app.delete('/students/{student_id}', tags=['Student Management'])\ndef delete_student(student_id: int):",
+        "peekOfCode": "def view_student(student_id: int):\n    return one_or_404('SELECT id,name,email,department,semester,phone,attendance,created_at FROM students WHERE id=?', [student_id], 'Student')\n@app.put('/students/{student_id}', tags=['Student Management'])\ndef update_student(student_id: int, payload: StudentUpdate):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student')\n    values = payload.model_dump()\n    password = values.pop('password')\n    try:\n        if password:\n            execute('UPDATE students SET name=?,email=?,department=?,semester=?,phone=?,attendance=?,password_hash=? WHERE id=?', [*values.values(), hash_password(password), student_id])",
         "detail": "app.main",
         "documentation": {}
     },
@@ -497,7 +636,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def update_student(student_id: int, payload: StudentUpdate):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student')\n    try: execute('UPDATE students SET name=?,email=?,department=?,semester=?,phone=?,attendance=? WHERE id=?', [*payload.model_dump().values(), student_id])\n    except IntegrityError as exc: raise HTTPException(409, 'Email already belongs to another student') from exc\n    return view_student(student_id)\n@app.delete('/students/{student_id}', tags=['Student Management'])\ndef delete_student(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); execute('DELETE FROM students WHERE id=?', [student_id]); return {'message': 'Student deleted'}\n@app.post('/faculty', tags=['Faculty Management'])\ndef add_faculty(payload: FacultyCreate):",
+        "peekOfCode": "def update_student(student_id: int, payload: StudentUpdate):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student')\n    values = payload.model_dump()\n    password = values.pop('password')\n    try:\n        if password:\n            execute('UPDATE students SET name=?,email=?,department=?,semester=?,phone=?,attendance=?,password_hash=? WHERE id=?', [*values.values(), hash_password(password), student_id])\n        else:\n            execute('UPDATE students SET name=?,email=?,department=?,semester=?,phone=?,attendance=? WHERE id=?', [*values.values(), student_id])\n    except IntegrityError as exc:",
         "detail": "app.main",
         "documentation": {}
     },
@@ -506,7 +645,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def delete_student(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); execute('DELETE FROM students WHERE id=?', [student_id]); return {'message': 'Student deleted'}\n@app.post('/faculty', tags=['Faculty Management'])\ndef add_faculty(payload: FacultyCreate):\n    values = [payload.name, payload.email.lower(), payload.department, payload.phone, hash_faculty_code(payload.faculty_code)]\n    return create('INSERT INTO faculty(name,email,department,phone,faculty_code_hash) VALUES(?,?,?,?,?)', values, 'SELECT id,name,email,department,phone,created_at FROM faculty WHERE id=?', 'Faculty')\n@app.post('/faculty/login', tags=['Faculty Authentication'])\ndef faculty_login(payload: FacultyLogin):\n    faculty_rows = query('SELECT id,email,faculty_code_hash FROM faculty WHERE lower(email)=lower(?)', [payload.email])\n    faculty = faculty_rows[0] if faculty_rows else None",
+        "peekOfCode": "def delete_student(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); execute('DELETE FROM students WHERE id=?', [student_id]); return {'message': 'Student deleted'}\n@app.post('/faculty', tags=['Faculty Management'])\ndef add_faculty(payload: FacultyCreate, request: Request):\n    require_roles(request, 'admin')\n    values = [payload.name, payload.email.lower(), payload.department, payload.phone, hash_password(payload.password)]\n    faculty = create('INSERT INTO faculty(name,email,department,phone,password_hash) VALUES(?,?,?,?,?)', values, 'SELECT id,name,email,department,phone,created_at FROM faculty WHERE id=?', 'Faculty')\n    return faculty\n@app.post('/login', tags=['Authentication'])\ndef login(payload: LoginRequest):",
         "detail": "app.main",
         "documentation": {}
     },
@@ -515,16 +654,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def add_faculty(payload: FacultyCreate):\n    values = [payload.name, payload.email.lower(), payload.department, payload.phone, hash_faculty_code(payload.faculty_code)]\n    return create('INSERT INTO faculty(name,email,department,phone,faculty_code_hash) VALUES(?,?,?,?,?)', values, 'SELECT id,name,email,department,phone,created_at FROM faculty WHERE id=?', 'Faculty')\n@app.post('/faculty/login', tags=['Faculty Authentication'])\ndef faculty_login(payload: FacultyLogin):\n    faculty_rows = query('SELECT id,email,faculty_code_hash FROM faculty WHERE lower(email)=lower(?)', [payload.email])\n    faculty = faculty_rows[0] if faculty_rows else None\n    if not faculty or not faculty['faculty_code_hash'] or not hmac.compare_digest(faculty['faculty_code_hash'], hash_faculty_code(payload.faculty_code)):\n        raise HTTPException(401, 'Invalid faculty email or code')\n    return {'role': 'faculty', 'faculty_id': faculty['id'], 'email': faculty['email']}",
-        "detail": "app.main",
-        "documentation": {}
-    },
-    {
-        "label": "faculty_login",
-        "kind": 2,
-        "importPath": "app.main",
-        "description": "app.main",
-        "peekOfCode": "def faculty_login(payload: FacultyLogin):\n    faculty_rows = query('SELECT id,email,faculty_code_hash FROM faculty WHERE lower(email)=lower(?)', [payload.email])\n    faculty = faculty_rows[0] if faculty_rows else None\n    if not faculty or not faculty['faculty_code_hash'] or not hmac.compare_digest(faculty['faculty_code_hash'], hash_faculty_code(payload.faculty_code)):\n        raise HTTPException(401, 'Invalid faculty email or code')\n    return {'role': 'faculty', 'faculty_id': faculty['id'], 'email': faculty['email']}\n@app.post('/login', tags=['Authentication'])\ndef login(payload: LoginRequest):\n    if payload.role == 'faculty':\n        if payload.faculty_code != '2124':",
+        "peekOfCode": "def add_faculty(payload: FacultyCreate, request: Request):\n    require_roles(request, 'admin')\n    values = [payload.name, payload.email.lower(), payload.department, payload.phone, hash_password(payload.password)]\n    faculty = create('INSERT INTO faculty(name,email,department,phone,password_hash) VALUES(?,?,?,?,?)', values, 'SELECT id,name,email,department,phone,created_at FROM faculty WHERE id=?', 'Faculty')\n    return faculty\n@app.post('/login', tags=['Authentication'])\ndef login(payload: LoginRequest):\n    email = payload.email.strip().lower()\n    if payload.role == 'admin':\n        if not ADMIN_PASSWORD or not admin_access(email) or not hmac.compare_digest(payload.password, ADMIN_PASSWORD):",
         "detail": "app.main",
         "documentation": {}
     },
@@ -533,7 +663,52 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def login(payload: LoginRequest):\n    if payload.role == 'faculty':\n        if payload.faculty_code != '2124':\n            raise HTTPException(401, 'Faculty login requires code 2124')\n        faculty = query('SELECT id,email,faculty_code_hash FROM faculty WHERE lower(email)=lower(?)', [payload.email])\n        if not faculty or not hmac.compare_digest(faculty[0]['faculty_code_hash'] or '', hash_faculty_code(payload.faculty_code)):\n            raise HTTPException(401, 'Invalid faculty email or code')\n        return {'role': 'faculty', 'faculty_id': faculty[0]['id'], 'email': faculty[0]['email']}\n    student = one_or_404('SELECT id,name,email FROM students WHERE lower(email)=lower(?)', [payload.email], 'Student')\n    return {'role': 'student', 'student_id': student['id'], 'name': student['name'], 'email': student['email']}",
+        "peekOfCode": "def login(payload: LoginRequest):\n    email = payload.email.strip().lower()\n    if payload.role == 'admin':\n        if not ADMIN_PASSWORD or not admin_access(email) or not hmac.compare_digest(payload.password, ADMIN_PASSWORD):\n            raise HTTPException(401, 'Invalid credentials')\n        account_id = 0\n        name = 'Administrator'\n    else:\n        table = 'faculty' if payload.role == 'faculty' else 'students'\n        account = one_or_404(f'SELECT id,name,email,password_hash FROM {table} WHERE lower(email)=lower(?)', [email], 'Account')",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "user_for_otp",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def user_for_otp(role: str, email: str):\n    normalized = email.lower()\n    if role == 'admin':\n        if not admin_access(normalized):\n            raise HTTPException(404, 'Admin account not found')\n        return {'id': 0, 'name': 'Administrator', 'email': normalized}\n    if role == 'faculty':\n        return one_or_404('SELECT id,email FROM faculty WHERE lower(email)=lower(?)', [normalized], 'Faculty account')\n    match = query('SELECT id,name,email FROM students WHERE lower(email)=lower(?)', [normalized])\n    if match:",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "authenticated_user",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def authenticated_user(role: str, account: dict):\n    if role == 'admin':\n        return {'role': 'admin', 'name': 'Administrator', 'email': account['email']}\n    if role == 'faculty':\n        return {'role': 'faculty', 'faculty_id': account['id'], 'email': account['email']}\n    return {'role': 'student', 'student_id': account['id'], 'name': account['name'], 'email': account['email']}\n@app.post('/auth/request-otp', tags=['Authentication'])\ndef request_otp(payload: OTPRequest):\n    raise HTTPException(410, 'Code verification is disabled. Use direct password login.')\n@app.post('/auth/signup', tags=['Authentication'])",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "request_otp",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def request_otp(payload: OTPRequest):\n    raise HTTPException(410, 'Code verification is disabled. Use direct password login.')\n@app.post('/auth/signup', tags=['Authentication'])\ndef signup_student(payload: StudentSignupRequest):\n    email = payload.email.lower()\n    existing = query('SELECT id FROM students WHERE lower(email)=lower(?)', [email])\n    if existing:\n        raise HTTPException(409, 'A student account already exists for this email')\n    try:\n        student = create(",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "signup_student",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def signup_student(payload: StudentSignupRequest):\n    email = payload.email.lower()\n    existing = query('SELECT id FROM students WHERE lower(email)=lower(?)', [email])\n    if existing:\n        raise HTTPException(409, 'A student account already exists for this email')\n    try:\n        student = create(\n            'INSERT INTO students(name,email,department,semester,phone,attendance,password_hash) VALUES(?,?,?,?,?,?,?)',\n            [payload.name, email, payload.department, payload.semester, payload.phone, 0, hash_password(payload.password)],\n            'SELECT id,name,email,department,semester,phone,attendance FROM students WHERE id=?',",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "verify_otp",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def verify_otp(payload: OTPVerification):\n    raise HTTPException(410, 'Code verification is disabled. Use direct password login.')\n@app.get('/faculty', tags=['Faculty Management'])\ndef view_faculty_list(department: str | None = None):\n    fields = 'id,name,email,department,phone,created_at'\n    return query(f'SELECT {fields} FROM faculty WHERE department=? ORDER BY name' if department else f'SELECT {fields} FROM faculty ORDER BY name', [department] if department else [])\n@app.delete('/faculty/{faculty_id}', tags=['Faculty Management'])\ndef delete_faculty(faculty_id: int):\n    one_or_404('SELECT id FROM faculty WHERE id=?', [faculty_id], 'Faculty'); execute('DELETE FROM faculty WHERE id=?', [faculty_id]); return {'message': 'Faculty deleted'}\n@app.post('/academic-records', tags=['Academic Data Entry'])",
         "detail": "app.main",
         "documentation": {}
     },
@@ -560,7 +735,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def add_academic_record(payload: AcademicRecordCreate):\n    one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student')\n    return create('INSERT INTO academic_records(student_id,subject,semester,internal_marks,test_marks,previous_semester_marks,percentile_12th) VALUES(?,?,?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM academic_records WHERE id=?', 'Academic record')\n@app.get('/students/{student_id}/academic-records', tags=['Academic Data Entry'])\ndef view_academic_records(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT * FROM academic_records WHERE student_id=? ORDER BY semester,subject', [student_id])\n@app.post('/attendance', tags=['Attendance Management'])\ndef record_attendance(payload: AttendanceCreate):\n    if payload.classes_attended > payload.classes_held: raise HTTPException(422, 'Classes attended cannot exceed classes held')\n    one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student')",
+        "peekOfCode": "def add_academic_record(payload: AcademicRecordCreate):\n    one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student')\n    return create('INSERT INTO academic_records(student_id,subject,semester,internal_marks,test_marks,previous_semester_marks,percentile_12th) VALUES(?,?,?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM academic_records WHERE id=?', 'Academic record')\n@app.get('/students/{student_id}/academic-records', tags=['Academic Data Entry'])\ndef view_academic_records(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT * FROM academic_records WHERE student_id=? ORDER BY semester,subject', [student_id])\n@app.post('/attendance', tags=['Attendance Management'])\ndef record_attendance(payload: AttendanceCreate, request: Request):\n    user = current_user(request)\n    if user['role'] == 'student' and payload.student_id != user['account_id']:",
         "detail": "app.main",
         "documentation": {}
     },
@@ -569,7 +744,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def view_academic_records(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT * FROM academic_records WHERE student_id=? ORDER BY semester,subject', [student_id])\n@app.post('/attendance', tags=['Attendance Management'])\ndef record_attendance(payload: AttendanceCreate):\n    if payload.classes_attended > payload.classes_held: raise HTTPException(422, 'Classes attended cannot exceed classes held')\n    one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student')\n    return create('INSERT INTO attendance(student_id,subject,classes_held,classes_attended,date) VALUES(?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM attendance WHERE id=?', 'Attendance record')\n@app.get('/attendance/student/{student_id}', tags=['Attendance Management'])\ndef view_attendance(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT subject,SUM(classes_held) classes_held,SUM(classes_attended) classes_attended,ROUND((SUM(classes_attended)*100.0/SUM(classes_held))::numeric,2) attendance_percentage FROM attendance WHERE student_id=? GROUP BY subject', [student_id])",
+        "peekOfCode": "def view_academic_records(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT * FROM academic_records WHERE student_id=? ORDER BY semester,subject', [student_id])\n@app.post('/attendance', tags=['Attendance Management'])\ndef record_attendance(payload: AttendanceCreate, request: Request):\n    user = current_user(request)\n    if user['role'] == 'student' and payload.student_id != user['account_id']:\n        raise HTTPException(403, 'Students can only mark their own attendance')\n    if payload.classes_attended > payload.classes_held: raise HTTPException(422, 'Classes attended cannot exceed classes held')\n    one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student')\n    return create('INSERT INTO attendance(student_id,subject,classes_held,classes_attended,date) VALUES(?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM attendance WHERE id=?', 'Attendance record')",
         "detail": "app.main",
         "documentation": {}
     },
@@ -578,7 +753,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def record_attendance(payload: AttendanceCreate):\n    if payload.classes_attended > payload.classes_held: raise HTTPException(422, 'Classes attended cannot exceed classes held')\n    one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student')\n    return create('INSERT INTO attendance(student_id,subject,classes_held,classes_attended,date) VALUES(?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM attendance WHERE id=?', 'Attendance record')\n@app.get('/attendance/student/{student_id}', tags=['Attendance Management'])\ndef view_attendance(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT subject,SUM(classes_held) classes_held,SUM(classes_attended) classes_attended,ROUND((SUM(classes_attended)*100.0/SUM(classes_held))::numeric,2) attendance_percentage FROM attendance WHERE student_id=? GROUP BY subject', [student_id])\n@app.post('/assignments', tags=['Assignment Tracking'])\ndef add_assignment(payload: AssignmentCreate):\n    one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student'); return create('INSERT INTO assignments(student_id,subject,title,due_date,status,score) VALUES(?,?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM assignments WHERE id=?', 'Assignment')",
+        "peekOfCode": "def record_attendance(payload: AttendanceCreate, request: Request):\n    user = current_user(request)\n    if user['role'] == 'student' and payload.student_id != user['account_id']:\n        raise HTTPException(403, 'Students can only mark their own attendance')\n    if payload.classes_attended > payload.classes_held: raise HTTPException(422, 'Classes attended cannot exceed classes held')\n    one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student')\n    return create('INSERT INTO attendance(student_id,subject,classes_held,classes_attended,date) VALUES(?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM attendance WHERE id=?', 'Attendance record')\n@app.get('/attendance/student/{student_id}', tags=['Attendance Management'])\ndef view_attendance(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT subject,SUM(classes_held) classes_held,SUM(classes_attended) classes_attended,ROUND((SUM(classes_attended)*100.0/SUM(classes_held))::numeric,2) attendance_percentage FROM attendance WHERE student_id=? GROUP BY subject', [student_id])",
         "detail": "app.main",
         "documentation": {}
     },
@@ -587,7 +762,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def view_attendance(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT subject,SUM(classes_held) classes_held,SUM(classes_attended) classes_attended,ROUND((SUM(classes_attended)*100.0/SUM(classes_held))::numeric,2) attendance_percentage FROM attendance WHERE student_id=? GROUP BY subject', [student_id])\n@app.post('/assignments', tags=['Assignment Tracking'])\ndef add_assignment(payload: AssignmentCreate):\n    one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student'); return create('INSERT INTO assignments(student_id,subject,title,due_date,status,score) VALUES(?,?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM assignments WHERE id=?', 'Assignment')\n@app.get('/assignments/student/{student_id}', tags=['Assignment Tracking'])\ndef view_assignments(student_id: int, status: str | None = None):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT * FROM assignments WHERE student_id=? AND status=?' if status else 'SELECT * FROM assignments WHERE student_id=?', [student_id, status] if status else [student_id])\n@app.post('/tests', tags=['Online Test Management'])\ndef schedule_test(payload: TestCreate):",
+        "peekOfCode": "def view_attendance(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT subject,SUM(classes_held) classes_held,SUM(classes_attended) classes_attended,ROUND((SUM(classes_attended)*100.0/SUM(classes_held))::numeric,2) attendance_percentage FROM attendance WHERE student_id=? GROUP BY subject', [student_id])\n@app.post('/assignments', tags=['Assignment Tracking'])\ndef add_assignment(payload: AssignmentCreate):\n    student = one_or_404('SELECT id,semester FROM students WHERE id=?', [payload.student_id], 'Student')\n    if payload.subject and student['semester']:\n        pass\n    return create('INSERT INTO assignments(student_id,subject,title,due_date,status,score) VALUES(?,?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM assignments WHERE id=?', 'Assignment')\n@app.post('/assignments/semester', tags=['Assignment Tracking'])\ndef add_semester_assignments(payload: SemesterAssignmentCreate):",
         "detail": "app.main",
         "documentation": {}
     },
@@ -596,7 +771,16 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def add_assignment(payload: AssignmentCreate):\n    one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student'); return create('INSERT INTO assignments(student_id,subject,title,due_date,status,score) VALUES(?,?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM assignments WHERE id=?', 'Assignment')\n@app.get('/assignments/student/{student_id}', tags=['Assignment Tracking'])\ndef view_assignments(student_id: int, status: str | None = None):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT * FROM assignments WHERE student_id=? AND status=?' if status else 'SELECT * FROM assignments WHERE student_id=?', [student_id, status] if status else [student_id])\n@app.post('/tests', tags=['Online Test Management'])\ndef schedule_test(payload: TestCreate):\n    if payload.faculty_id: one_or_404('SELECT id FROM faculty WHERE id=?', [payload.faculty_id], 'Faculty')\n    return create('INSERT INTO tests(faculty_id,subject,title,total_marks,scheduled_at,question_paper) VALUES(?,?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM tests WHERE id=?', 'Test')\n@app.get('/tests', tags=['Online Test Management'])",
+        "peekOfCode": "def add_assignment(payload: AssignmentCreate):\n    student = one_or_404('SELECT id,semester FROM students WHERE id=?', [payload.student_id], 'Student')\n    if payload.subject and student['semester']:\n        pass\n    return create('INSERT INTO assignments(student_id,subject,title,due_date,status,score) VALUES(?,?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM assignments WHERE id=?', 'Assignment')\n@app.post('/assignments/semester', tags=['Assignment Tracking'])\ndef add_semester_assignments(payload: SemesterAssignmentCreate):\n    rows = query('SELECT id FROM students WHERE semester=? ORDER BY name', [payload.semester])\n    created = []\n    for student in rows:",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "add_semester_assignments",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def add_semester_assignments(payload: SemesterAssignmentCreate):\n    rows = query('SELECT id FROM students WHERE semester=? ORDER BY name', [payload.semester])\n    created = []\n    for student in rows:\n        try:\n            created.append(create(\n                'INSERT INTO assignments(student_id,subject,title,due_date,status,score) VALUES(?,?,?,?,?,?)',\n                [student['id'], payload.subject, payload.title, payload.due_date, payload.status, payload.score],\n                'SELECT * FROM assignments WHERE id=?',\n                'Assignment'",
         "detail": "app.main",
         "documentation": {}
     },
@@ -605,7 +789,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def view_assignments(student_id: int, status: str | None = None):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT * FROM assignments WHERE student_id=? AND status=?' if status else 'SELECT * FROM assignments WHERE student_id=?', [student_id, status] if status else [student_id])\n@app.post('/tests', tags=['Online Test Management'])\ndef schedule_test(payload: TestCreate):\n    if payload.faculty_id: one_or_404('SELECT id FROM faculty WHERE id=?', [payload.faculty_id], 'Faculty')\n    return create('INSERT INTO tests(faculty_id,subject,title,total_marks,scheduled_at,question_paper) VALUES(?,?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM tests WHERE id=?', 'Test')\n@app.get('/tests', tags=['Online Test Management'])\ndef list_tests(subject: str | None = None):\n    return query('SELECT * FROM tests WHERE subject=? ORDER BY created_at DESC' if subject else 'SELECT * FROM tests ORDER BY created_at DESC', [subject] if subject else [])\ndef faculty_test(test_id: int, faculty_id: int):",
+        "peekOfCode": "def view_assignments(student_id: int, status: str | None = None):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT * FROM assignments WHERE student_id=? AND status=?' if status else 'SELECT * FROM assignments WHERE student_id=?', [student_id, status] if status else [student_id])\n@app.post('/student/me/submit-assignment', tags=['Student Portal'])\nasync def student_submit_assignment(request: Request, assignment_id: int = Form(...), file: UploadFile = File(...)):\n    user = require_roles(request, 'student')\n    assignment = one_or_404('SELECT * FROM assignments WHERE id=? AND student_id=?', [assignment_id, user['account_id']], 'Assignment')\n    suffix = Path(file.filename or '').suffix.lower()\n    if suffix not in ALLOWED_FILES or file.content_type != ALLOWED_FILES[suffix]:\n        raise HTTPException(415, 'Assignment must be a PDF, JPG, JPEG, or PNG file')\n    contents = await file.read(MAX_SUBMISSION_SIZE + 1)",
         "detail": "app.main",
         "documentation": {}
     },
@@ -623,7 +807,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def list_tests(subject: str | None = None):\n    return query('SELECT * FROM tests WHERE subject=? ORDER BY created_at DESC' if subject else 'SELECT * FROM tests ORDER BY created_at DESC', [subject] if subject else [])\ndef faculty_test(test_id: int, faculty_id: int):\n    one_or_404('SELECT id FROM faculty WHERE id=?', [faculty_id], 'Faculty')\n    test = one_or_404('SELECT id,faculty_id FROM tests WHERE id=?', [test_id], 'Test')\n    if test['faculty_id'] is not None and test['faculty_id'] != faculty_id:\n        raise HTTPException(403, 'Only the assigned faculty can review this submission')\n    return test\n@app.post('/tests/{test_id}/submissions', tags=['Online Test Management'])\nasync def upload_test_paper(test_id: int, student_id: int = Form(...), file: UploadFile = File(...)):",
+        "peekOfCode": "def list_tests(subject: str | None = None):\n    return query('SELECT * FROM tests WHERE subject=? ORDER BY created_at DESC' if subject else 'SELECT * FROM tests ORDER BY created_at DESC', [subject] if subject else [])\ndef faculty_test(test_id: int, faculty_id: int):\n    one_or_404('SELECT id FROM faculty WHERE id=?', [faculty_id], 'Faculty')\n    test = one_or_404('SELECT id,faculty_id FROM tests WHERE id=?', [test_id], 'Test')\n    if test['faculty_id'] is not None and test['faculty_id'] != faculty_id:\n        raise HTTPException(403, 'Only the assigned faculty can review this submission')\n    return test\n@app.post('/tests/{test_id}/submissions', tags=['Online Test Management'])\nasync def upload_test_paper(test_id: int, request: Request, student_id: int = Form(...), file: UploadFile = File(...)):",
         "detail": "app.main",
         "documentation": {}
     },
@@ -632,7 +816,16 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def faculty_test(test_id: int, faculty_id: int):\n    one_or_404('SELECT id FROM faculty WHERE id=?', [faculty_id], 'Faculty')\n    test = one_or_404('SELECT id,faculty_id FROM tests WHERE id=?', [test_id], 'Test')\n    if test['faculty_id'] is not None and test['faculty_id'] != faculty_id:\n        raise HTTPException(403, 'Only the assigned faculty can review this submission')\n    return test\n@app.post('/tests/{test_id}/submissions', tags=['Online Test Management'])\nasync def upload_test_paper(test_id: int, student_id: int = Form(...), file: UploadFile = File(...)):\n    one_or_404('SELECT id FROM tests WHERE id=?', [test_id], 'Test')\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student')",
+        "peekOfCode": "def faculty_test(test_id: int, faculty_id: int):\n    one_or_404('SELECT id FROM faculty WHERE id=?', [faculty_id], 'Faculty')\n    test = one_or_404('SELECT id,faculty_id FROM tests WHERE id=?', [test_id], 'Test')\n    if test['faculty_id'] is not None and test['faculty_id'] != faculty_id:\n        raise HTTPException(403, 'Only the assigned faculty can review this submission')\n    return test\n@app.post('/tests/{test_id}/submissions', tags=['Online Test Management'])\nasync def upload_test_paper(test_id: int, request: Request, student_id: int = Form(...), file: UploadFile = File(...)):\n    user = current_user(request)\n    if user['role'] == 'student' and student_id != user['account_id']:",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "list_test_submissions",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def list_test_submissions(test_id: int, request: Request, student_id: int | None = Query(None)):\n    user = current_user(request)\n    if user['role'] == 'student':\n        sid = student_id or user['account_id']\n        if sid != user['account_id']:\n            raise HTTPException(403, 'You can only view your own submissions')\n        return query('SELECT id,test_id,student_id,file_name,content_type,file_size,submitted_at,score,feedback,status FROM submissions WHERE test_id=? AND student_id=?', [test_id, sid])\n    return query('SELECT id,test_id,student_id,file_name,content_type,file_size,submitted_at,score,feedback,status FROM submissions WHERE test_id=?', [test_id])\n@app.get('/submissions', tags=['Faculty Submission Review'])\ndef list_submissions(faculty_id: int = Query(..., gt=0), auth_token: str = Query(...), test_id: int | None = None, student_id: int | None = None):",
         "detail": "app.main",
         "documentation": {}
     },
@@ -641,7 +834,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def list_submissions(faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$'), test_id: int | None = None, student_id: int | None = None):\n    faculty_from_credentials(faculty_id, faculty_code)\n    if test_id: faculty_test(test_id, faculty_id)\n    sql = 'SELECT s.id,s.test_id,s.student_id,s.file_name,s.content_type,s.file_size,s.submitted_at,s.score,s.feedback,s.status FROM submissions s JOIN tests t ON t.id=s.test_id WHERE (t.faculty_id=? OR t.faculty_id IS NULL)'\n    params = [faculty_id]\n    if test_id: sql += ' AND s.test_id=?'; params.append(test_id)\n    if student_id: sql += ' AND s.student_id=?'; params.append(student_id)\n    return query(sql + ' ORDER BY s.submitted_at DESC', params)\n@app.get('/submissions/{submission_id}', tags=['Faculty Submission Review'])\ndef review_submission(submission_id: int, faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$')):",
+        "peekOfCode": "def list_submissions(faculty_id: int = Query(..., gt=0), auth_token: str = Query(...), test_id: int | None = None, student_id: int | None = None):\n    faculty_from_credentials(faculty_id, auth_token)\n    if test_id: faculty_test(test_id, faculty_id)\n    sql = 'SELECT s.id,s.test_id,s.student_id,s.file_name,s.content_type,s.file_size,s.submitted_at,s.score,s.feedback,s.review_mode,s.status FROM submissions s JOIN tests t ON t.id=s.test_id WHERE (t.faculty_id=? OR t.faculty_id IS NULL)'\n    params = [faculty_id]\n    if test_id: sql += ' AND s.test_id=?'; params.append(test_id)\n    if student_id: sql += ' AND s.student_id=?'; params.append(student_id)\n    return query(sql + ' ORDER BY s.submitted_at DESC', params)\n@app.get('/submissions/{submission_id}', tags=['Faculty Submission Review'])\ndef review_submission(submission_id: int, faculty_id: int = Query(..., gt=0), auth_token: str = Query(...)):",
         "detail": "app.main",
         "documentation": {}
     },
@@ -650,7 +843,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def review_submission(submission_id: int, faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$')):\n    submission = one_or_404('SELECT s.*,t.faculty_id FROM submissions s JOIN tests t ON t.id=s.test_id WHERE s.id=?', [submission_id], 'Submission')\n    faculty_from_credentials(faculty_id, faculty_code)\n    faculty_test(submission['test_id'], faculty_id)\n    submission['annotations'] = json.loads(submission.pop('annotations_json') or '[]')\n    return submission\n@app.get('/submissions/{submission_id}/file', tags=['Faculty Submission Review'], response_class=FileResponse)\ndef download_submission(submission_id: int, faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$')):\n    submission = one_or_404('SELECT * FROM submissions WHERE id=?', [submission_id], 'Submission')\n    faculty_from_credentials(faculty_id, faculty_code)",
+        "peekOfCode": "def review_submission(submission_id: int, faculty_id: int = Query(..., gt=0), auth_token: str = Query(...)):\n    submission = one_or_404('SELECT s.*,t.faculty_id FROM submissions s JOIN tests t ON t.id=s.test_id WHERE s.id=?', [submission_id], 'Submission')\n    faculty_from_credentials(faculty_id, auth_token)\n    faculty_test(submission['test_id'], faculty_id)\n    submission['annotations'] = json.loads(submission.pop('annotations_json') or '[]')\n    submission['marks'] = json.loads(submission.pop('manual_marks_json') or '[]')\n    return submission\n@app.get('/submissions/{submission_id}/file', tags=['Faculty Submission Review'], response_class=FileResponse)\ndef download_submission(submission_id: int, faculty_id: int = Query(..., gt=0), auth_token: str = Query(...)):\n    submission = one_or_404('SELECT * FROM submissions WHERE id=?', [submission_id], 'Submission')",
         "detail": "app.main",
         "documentation": {}
     },
@@ -659,7 +852,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def download_submission(submission_id: int, faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$')):\n    submission = one_or_404('SELECT * FROM submissions WHERE id=?', [submission_id], 'Submission')\n    faculty_from_credentials(faculty_id, faculty_code)\n    faculty_test(submission['test_id'], faculty_id)\n    if not submission['file_path'] or not Path(submission['file_path']).is_file():\n        raise HTTPException(404, 'Submission file not found')\n    return FileResponse(submission['file_path'], media_type=submission['content_type'], filename=submission['file_name'])\n@app.post('/submissions/{submission_id}/annotations', tags=['Faculty Submission Review'])\ndef annotate_submission(submission_id: int, payload: PenAnnotation, faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$')):\n    submission = one_or_404('SELECT * FROM submissions WHERE id=?', [submission_id], 'Submission')",
+        "peekOfCode": "def download_submission(submission_id: int, faculty_id: int = Query(..., gt=0), auth_token: str = Query(...)):\n    submission = one_or_404('SELECT * FROM submissions WHERE id=?', [submission_id], 'Submission')\n    faculty_from_credentials(faculty_id, auth_token)\n    faculty_test(submission['test_id'], faculty_id)\n    if not submission['file_path'] or not Path(submission['file_path']).is_file():\n        raise HTTPException(404, 'Submission file not found')\n    return FileResponse(submission['file_path'], media_type=submission['content_type'], filename=submission['file_name'])\n@app.post('/submissions/{submission_id}/annotations', tags=['Faculty Submission Review'])\ndef annotate_submission(submission_id: int, payload: PenAnnotation, faculty_id: int = Query(..., gt=0), auth_token: str = Query(...)):\n    submission = one_or_404('SELECT * FROM submissions WHERE id=?', [submission_id], 'Submission')",
         "detail": "app.main",
         "documentation": {}
     },
@@ -668,7 +861,16 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def annotate_submission(submission_id: int, payload: PenAnnotation, faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$')):\n    submission = one_or_404('SELECT * FROM submissions WHERE id=?', [submission_id], 'Submission')\n    faculty_from_credentials(faculty_id, faculty_code)\n    faculty_test(submission['test_id'], faculty_id)\n    annotations = json.loads(submission['annotations_json'] or '[]')\n    annotations.append(payload.model_dump())\n    execute('UPDATE submissions SET annotations_json=?,status=? WHERE id=?', [json.dumps(annotations), 'in_review', submission_id])\n    return {'submission_id': submission_id, 'annotations': annotations, 'status': 'in_review'}\n@app.post('/submissions/{submission_id}/correct', tags=['Automatic Test Evaluation'])\ndef correct_test(submission_id: int, payload: CorrectionRequest, faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$')):",
+        "peekOfCode": "def annotate_submission(submission_id: int, payload: PenAnnotation, faculty_id: int = Query(..., gt=0), auth_token: str = Query(...)):\n    submission = one_or_404('SELECT * FROM submissions WHERE id=?', [submission_id], 'Submission')\n    faculty_from_credentials(faculty_id, auth_token)\n    faculty_test(submission['test_id'], faculty_id)\n    annotations = json.loads(submission['annotations_json'] or '[]')\n    annotations.append(payload.model_dump())\n    execute('UPDATE submissions SET annotations_json=?,status=? WHERE id=?', [json.dumps(annotations), 'in_review', submission_id])\n    return {'submission_id': submission_id, 'annotations': annotations, 'status': 'in_review'}\n@app.put('/submissions/{submission_id}/manual-review', tags=['Faculty Submission Review'])\ndef save_manual_review(submission_id: int, payload: ManualReviewSave, faculty_id: int = Query(..., gt=0), auth_token: str = Query(...)):",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "save_manual_review",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def save_manual_review(submission_id: int, payload: ManualReviewSave, faculty_id: int = Query(..., gt=0), auth_token: str = Query(...)):\n    submission = one_or_404('SELECT s.*,t.total_marks FROM submissions s JOIN tests t ON t.id=s.test_id WHERE s.id=?', [submission_id], 'Submission')\n    faculty_from_credentials(faculty_id, auth_token)\n    faculty_test(submission['test_id'], faculty_id)\n    if payload.score is not None and payload.score > submission['total_marks']:\n        raise HTTPException(422, 'Score cannot exceed total marks')\n    annotations = [annotation.model_dump() for annotation in payload.annotations]\n    marks = [mark.model_dump() for mark in payload.marks]\n    status = 'corrected' if payload.score is not None else 'in_review'\n    execute(",
         "detail": "app.main",
         "documentation": {}
     },
@@ -677,7 +879,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def correct_test(submission_id: int, payload: CorrectionRequest, faculty_id: int = Query(..., gt=0), faculty_code: str = Query(..., pattern=r'^2124$')):\n    submission = one_or_404('SELECT s.*,t.total_marks FROM submissions s JOIN tests t ON t.id=s.test_id WHERE s.id=?', [submission_id], 'Submission')\n    faculty_from_credentials(faculty_id, faculty_code)\n    faculty_test(submission['test_id'], faculty_id)\n    if payload.score > submission['total_marks']: raise HTTPException(422, 'Score cannot exceed total marks')\n    execute('UPDATE submissions SET score=?,feedback=?,status=? WHERE id=?', [payload.score, payload.feedback, 'corrected', submission_id])\n    return one_or_404('SELECT * FROM submissions WHERE id=?', [submission_id], 'Submission')\n@app.post('/results', tags=['Result Generation'])\ndef generate_result(payload: ResultCreate):\n    one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student')",
+        "peekOfCode": "def correct_test(submission_id: int, payload: CorrectionRequest, faculty_id: int = Query(..., gt=0), auth_token: str = Query(...)):\n    submission = one_or_404('SELECT s.*,t.total_marks FROM submissions s JOIN tests t ON t.id=s.test_id WHERE s.id=?', [submission_id], 'Submission')\n    faculty_from_credentials(faculty_id, auth_token)\n    faculty_test(submission['test_id'], faculty_id)\n    if payload.score > submission['total_marks']: raise HTTPException(422, 'Score cannot exceed total marks')\n    execute('UPDATE submissions SET score=?,feedback=?,status=? WHERE id=?', [payload.score, payload.feedback, 'corrected', submission_id])\n    return one_or_404('SELECT * FROM submissions WHERE id=?', [submission_id], 'Submission')\n@app.post('/results', tags=['Result Generation'])\ndef generate_result(payload: ResultCreate):\n    one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student')",
         "detail": "app.main",
         "documentation": {}
     },
@@ -686,7 +888,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def generate_result(payload: ResultCreate):\n    one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student')\n    values = [payload.student_id, payload.subject, payload.semester, payload.marks, payload.total_marks, grade(payload.marks, payload.total_marks)]\n    return create('INSERT INTO results(student_id,subject,semester,marks,total_marks,grade) VALUES(?,?,?,?,?,?)', values, 'SELECT * FROM results WHERE id=?', 'Result')\n@app.get('/results/student/{student_id}', tags=['Result Generation'])\ndef view_result(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT * FROM results WHERE student_id=? ORDER BY semester,subject', [student_id])\n@app.get('/predictions/student/{student_id}', tags=['Machine Learning Prediction'])\ndef predict_student_risk(student_id: int):\n    try: return predict(student_id)",
+        "peekOfCode": "def generate_result(payload: ResultCreate):\n    one_or_404('SELECT id FROM students WHERE id=?', [payload.student_id], 'Student')\n    values = [payload.student_id, payload.subject, payload.semester, payload.marks, payload.total_marks, grade(payload.marks, payload.total_marks)]\n    return create('INSERT INTO results(student_id,subject,semester,marks,total_marks,grade) VALUES(?,?,?,?,?,?)', values, 'SELECT * FROM results WHERE id=?', 'Result')\n@app.get('/results/student/{student_id}', tags=['Result Generation'])\ndef view_result(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT * FROM results WHERE student_id=? ORDER BY semester,subject', [student_id])\n@app.get('/predictions/student/{student_id}', tags=['Machine Learning Prediction'])\ndef predict_student_risk(student_id: int):\n    try:",
         "detail": "app.main",
         "documentation": {}
     },
@@ -695,7 +897,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def view_result(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT * FROM results WHERE student_id=? ORDER BY semester,subject', [student_id])\n@app.get('/predictions/student/{student_id}', tags=['Machine Learning Prediction'])\ndef predict_student_risk(student_id: int):\n    try: return predict(student_id)\n    except ValueError as exc: raise HTTPException(404, str(exc)) from exc\n@app.get('/analytics/overview', tags=['Dashboard Analytics'])\ndef dashboard_overview(department: str | None = None):\n    students = query('SELECT * FROM students WHERE department=?' if department else 'SELECT * FROM students', [department] if department else [])\n    risks = []",
+        "peekOfCode": "def view_result(student_id: int):\n    one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT * FROM results WHERE student_id=? ORDER BY semester,subject', [student_id])\n@app.get('/predictions/student/{student_id}', tags=['Machine Learning Prediction'])\ndef predict_student_risk(student_id: int):\n    try:\n        prediction = predict(student_id)\n        subjects = {row['subject'] for row in query('SELECT subject FROM academic_records WHERE student_id=? UNION SELECT subject FROM attendance WHERE student_id=? UNION SELECT subject FROM results WHERE student_id=?', [student_id, student_id, student_id])}\n        subject_risks = []\n        for subject in sorted(subjects):\n            record = query('SELECT AVG(internal_marks) internal_marks,AVG(test_marks) test_marks,AVG(previous_semester_marks) previous_semester_marks FROM academic_records WHERE student_id=? AND subject=?', [student_id, subject])[0]",
         "detail": "app.main",
         "documentation": {}
     },
@@ -704,7 +906,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def predict_student_risk(student_id: int):\n    try: return predict(student_id)\n    except ValueError as exc: raise HTTPException(404, str(exc)) from exc\n@app.get('/analytics/overview', tags=['Dashboard Analytics'])\ndef dashboard_overview(department: str | None = None):\n    students = query('SELECT * FROM students WHERE department=?' if department else 'SELECT * FROM students', [department] if department else [])\n    risks = []\n    for student in students:\n        try: risks.append(predict(student['id'])['risk'])\n        except ValueError: pass",
+        "peekOfCode": "def predict_student_risk(student_id: int):\n    try:\n        prediction = predict(student_id)\n        subjects = {row['subject'] for row in query('SELECT subject FROM academic_records WHERE student_id=? UNION SELECT subject FROM attendance WHERE student_id=? UNION SELECT subject FROM results WHERE student_id=?', [student_id, student_id, student_id])}\n        subject_risks = []\n        for subject in sorted(subjects):\n            record = query('SELECT AVG(internal_marks) internal_marks,AVG(test_marks) test_marks,AVG(previous_semester_marks) previous_semester_marks FROM academic_records WHERE student_id=? AND subject=?', [student_id, subject])[0]\n            attendance = query('SELECT COALESCE(SUM(classes_attended),0) attended,COALESCE(SUM(classes_held),0) held FROM attendance WHERE student_id=? AND subject=?', [student_id, subject])[0]\n            attendance_pct = round(attendance['attended'] / attendance['held'] * 100, 2) if attendance['held'] else None\n            test_marks = round(float(record['test_marks']), 2) if record['test_marks'] is not None else None",
         "detail": "app.main",
         "documentation": {}
     },
@@ -758,7 +960,7 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def attendance_report(): return query('SELECT s.id student_id,s.name,s.department,ROUND((COALESCE(SUM(a.classes_attended)*100.0/NULLIF(SUM(a.classes_held),0),s.attendance))::numeric,2) attendance_percentage FROM students s LEFT JOIN attendance a ON a.student_id=s.id GROUP BY s.id ORDER BY attendance_percentage')\n@app.get('/reports/export.csv', tags=['Reports'])\ndef export_results_csv():\n    rows = query('SELECT r.*,s.name student_name,s.department FROM results r JOIN students s ON s.id=r.student_id ORDER BY s.name,r.semester')\n    stream = BytesIO(); text = stream\n    import io\n    output = io.StringIO(); writer = csv.DictWriter(output, fieldnames=list(rows[0].keys()) if rows else ['message']); writer.writeheader(); writer.writerows(rows or [{'message': 'No results available'}]); stream.write(output.getvalue().encode()); stream.seek(0)\n    return StreamingResponse(stream, media_type='text/csv', headers={'Content-Disposition': 'attachment; filename=results.csv'})\nif __name__ == '__main__':\n    uvicorn.run(app, host='127.0.0.1', port=4009)",
+        "peekOfCode": "def attendance_report(): return query('SELECT s.id student_id,s.name,s.department,ROUND((COALESCE(SUM(a.classes_attended)*100.0/NULLIF(SUM(a.classes_held),0),s.attendance))::numeric,2) attendance_percentage FROM students s LEFT JOIN attendance a ON a.student_id=s.id GROUP BY s.id ORDER BY attendance_percentage')\n@app.get('/reports/export.csv', tags=['Reports'])\ndef export_results_csv():\n    rows = query('SELECT r.*,s.name student_name,s.department FROM results r JOIN students s ON s.id=r.student_id ORDER BY s.name,r.semester')\n    stream = BytesIO(); text = stream\n    import io\n    output = io.StringIO(); writer = csv.DictWriter(output, fieldnames=list(rows[0].keys()) if rows else ['message']); writer.writeheader(); writer.writerows(rows or [{'message': 'No results available'}]); stream.write(output.getvalue().encode()); stream.seek(0)\n    return StreamingResponse(stream, media_type='text/csv', headers={'Content-Disposition': 'attachment; filename=results.csv'})\n@app.get('/student/signup', include_in_schema=False)\ndef student_signup_page():",
         "detail": "app.main",
         "documentation": {}
     },
@@ -767,7 +969,79 @@
         "kind": 2,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "def export_results_csv():\n    rows = query('SELECT r.*,s.name student_name,s.department FROM results r JOIN students s ON s.id=r.student_id ORDER BY s.name,r.semester')\n    stream = BytesIO(); text = stream\n    import io\n    output = io.StringIO(); writer = csv.DictWriter(output, fieldnames=list(rows[0].keys()) if rows else ['message']); writer.writeheader(); writer.writerows(rows or [{'message': 'No results available'}]); stream.write(output.getvalue().encode()); stream.seek(0)\n    return StreamingResponse(stream, media_type='text/csv', headers={'Content-Disposition': 'attachment; filename=results.csv'})\nif __name__ == '__main__':\n    uvicorn.run(app, host='127.0.0.1', port=4009)",
+        "peekOfCode": "def export_results_csv():\n    rows = query('SELECT r.*,s.name student_name,s.department FROM results r JOIN students s ON s.id=r.student_id ORDER BY s.name,r.semester')\n    stream = BytesIO(); text = stream\n    import io\n    output = io.StringIO(); writer = csv.DictWriter(output, fieldnames=list(rows[0].keys()) if rows else ['message']); writer.writeheader(); writer.writerows(rows or [{'message': 'No results available'}]); stream.write(output.getvalue().encode()); stream.seek(0)\n    return StreamingResponse(stream, media_type='text/csv', headers={'Content-Disposition': 'attachment; filename=results.csv'})\n@app.get('/student/signup', include_in_schema=False)\ndef student_signup_page():\n    return FileResponse(FRONTEND_DIR / 'student-signup.html')\n@app.get('/student/portal', include_in_schema=False)",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "student_signup_page",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def student_signup_page():\n    return FileResponse(FRONTEND_DIR / 'student-signup.html')\n@app.get('/student/portal', include_in_schema=False)\ndef student_portal_page():\n    return FileResponse(FRONTEND_DIR / 'student-portal.html')\n@app.get('/student/me', tags=['Student Portal'])\ndef student_me(request: Request):\n    user = require_roles(request, 'student')\n    return one_or_404('SELECT id,name,email,department,semester,phone,attendance,created_at FROM students WHERE id=?', [user['account_id']], 'Student')\n@app.get('/student/me/dashboard', tags=['Student Portal'])",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "student_portal_page",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def student_portal_page():\n    return FileResponse(FRONTEND_DIR / 'student-portal.html')\n@app.get('/student/me', tags=['Student Portal'])\ndef student_me(request: Request):\n    user = require_roles(request, 'student')\n    return one_or_404('SELECT id,name,email,department,semester,phone,attendance,created_at FROM students WHERE id=?', [user['account_id']], 'Student')\n@app.get('/student/me/dashboard', tags=['Student Portal'])\ndef student_me_dashboard(request: Request):\n    user = require_roles(request, 'student')\n    sid = user['account_id']",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "student_me",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def student_me(request: Request):\n    user = require_roles(request, 'student')\n    return one_or_404('SELECT id,name,email,department,semester,phone,attendance,created_at FROM students WHERE id=?', [user['account_id']], 'Student')\n@app.get('/student/me/dashboard', tags=['Student Portal'])\ndef student_me_dashboard(request: Request):\n    user = require_roles(request, 'student')\n    sid = user['account_id']\n    student = one_or_404('SELECT id,name,email,department,semester,phone,attendance,created_at FROM students WHERE id=?', [sid], 'Student')\n    attendance = query('SELECT subject,SUM(classes_held) classes_held,SUM(classes_attended) classes_attended,ROUND((SUM(classes_attended)*100.0/SUM(classes_held))::numeric,2) attendance_percentage FROM attendance WHERE student_id=? GROUP BY subject', [sid])\n    results = query('SELECT * FROM results WHERE student_id=? ORDER BY semester,subject', [sid])",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "student_me_dashboard",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def student_me_dashboard(request: Request):\n    user = require_roles(request, 'student')\n    sid = user['account_id']\n    student = one_or_404('SELECT id,name,email,department,semester,phone,attendance,created_at FROM students WHERE id=?', [sid], 'Student')\n    attendance = query('SELECT subject,SUM(classes_held) classes_held,SUM(classes_attended) classes_attended,ROUND((SUM(classes_attended)*100.0/SUM(classes_held))::numeric,2) attendance_percentage FROM attendance WHERE student_id=? GROUP BY subject', [sid])\n    results = query('SELECT * FROM results WHERE student_id=? ORDER BY semester,subject', [sid])\n    assignments = query('SELECT * FROM assignments WHERE student_id=? ORDER BY due_date DESC LIMIT 5', [sid])\n    tests = query('SELECT t.id,t.subject,t.title,t.total_marks,t.scheduled_at,s.score,s.status,s.submitted_at FROM tests t LEFT JOIN submissions s ON s.test_id=t.id AND s.student_id=? ORDER BY t.created_at DESC LIMIT 10', [sid])\n    counts = {\n        'assignments': query('SELECT COUNT(*) count FROM assignments WHERE student_id=?', [sid])[0]['count'],",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "student_submit_attendance",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def student_submit_attendance(payload: AttendanceCreate, request: Request):\n    user = require_roles(request, 'student')\n    if payload.student_id != user['account_id']:\n        raise HTTPException(403, 'Students can only record their own attendance')\n    return record_attendance(payload, request)\n@app.get('/student/me/report', tags=['Student Portal'])\ndef student_me_report(request: Request):\n    user = require_roles(request, 'student')\n    sid = user['account_id']\n    student = one_or_404('SELECT id,name,email,department,semester,phone,attendance,created_at FROM students WHERE id=?', [sid], 'Student')",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "student_me_report",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def student_me_report(request: Request):\n    user = require_roles(request, 'student')\n    sid = user['account_id']\n    student = one_or_404('SELECT id,name,email,department,semester,phone,attendance,created_at FROM students WHERE id=?', [sid], 'Student')\n    results = query('SELECT * FROM results WHERE student_id=? ORDER BY semester,subject', [sid])\n    attendance = query('SELECT subject,SUM(classes_held) classes_held,SUM(classes_attended) classes_attended,ROUND((SUM(classes_attended)*100.0/SUM(classes_held))::numeric,2) attendance_percentage FROM attendance WHERE student_id=? GROUP BY subject', [sid])\n    academic_records = query('SELECT * FROM academic_records WHERE student_id=? ORDER BY semester,subject', [sid])\n    try:\n        prediction = predict_student_risk(sid)\n    except HTTPException:",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "student_submissions",
+        "kind": 2,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "def student_submissions(request: Request):\n    user = require_roles(request, 'student')\n    return query(\n        'SELECT s.id,s.test_id,s.student_id,s.file_name,s.content_type,s.file_size,s.submitted_at,s.score,s.feedback,s.status,t.subject,t.title,t.total_marks '\n        'FROM submissions s JOIN tests t ON t.id=s.test_id WHERE s.student_id=? ORDER BY s.submitted_at DESC',\n        [user['account_id']],\n    )\nif __name__ == '__main__':\n    configured_port = os.getenv('APP_PORT')\n    port = int(configured_port or '4009')",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "BASE_DIR",
+        "kind": 5,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "BASE_DIR = Path(__file__).resolve().parent.parent\nload_dotenv(BASE_DIR / '.env')\ntry:\n    from .db import IntegrityError, execute, init_db, query\n    from .smtp_service import send_email, send_otp_email\n    from .schemas import AcademicRecordCreate, AssignmentCreate, AttendanceCreate, CorrectionRequest, FacultyCreate, FacultyLogin, LoginRequest, ManualReviewSave, OTPRequest, OTPVerification, PenAnnotation, ResultCreate, SemesterAssignmentCreate, StudentCreate, StudentSignupRequest, StudentUpdate, TestCreate\n    from .services import grade, predict\nexcept ImportError:\n    from db import IntegrityError, execute, init_db, query\n    from smtp_service import send_email, send_otp_email",
         "detail": "app.main",
         "documentation": {}
     },
@@ -794,7 +1068,7 @@
         "kind": 5,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "UPLOAD_DIR = Path(os.getenv('UPLOAD_DIR', 'data/submissions'))\nMAX_SUBMISSION_SIZE = 10 * 1024 * 1024\nALLOWED_FILES = {\n    '.pdf': 'application/pdf',\n    '.jpg': 'image/jpeg',\n    '.jpeg': 'image/jpeg',\n    '.png': 'image/png',\n}\n@app.on_event('startup')\ndef startup():",
+        "peekOfCode": "UPLOAD_DIR = Path(os.getenv('UPLOAD_DIR', 'data/submissions'))\nMAX_SUBMISSION_SIZE = 10 * 1024 * 1024\nALLOWED_FILES = {\n    '.pdf': 'application/pdf',\n    '.jpg': 'image/jpeg',\n    '.jpeg': 'image/jpeg',\n    '.png': 'image/png',\n}\nADMIN_EMAILS = {email.strip().lower() for email in os.getenv('ADMIN_EMAILS', 'admin@eduvista.com').split(',') if email.strip()}\nSESSION_TTL_SECONDS = int(os.getenv('SESSION_TTL_SECONDS', str(8 * 60 * 60)))",
         "detail": "app.main",
         "documentation": {}
     },
@@ -803,7 +1077,7 @@
         "kind": 5,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "MAX_SUBMISSION_SIZE = 10 * 1024 * 1024\nALLOWED_FILES = {\n    '.pdf': 'application/pdf',\n    '.jpg': 'image/jpeg',\n    '.jpeg': 'image/jpeg',\n    '.png': 'image/png',\n}\n@app.on_event('startup')\ndef startup():\n    init_db()",
+        "peekOfCode": "MAX_SUBMISSION_SIZE = 10 * 1024 * 1024\nALLOWED_FILES = {\n    '.pdf': 'application/pdf',\n    '.jpg': 'image/jpeg',\n    '.jpeg': 'image/jpeg',\n    '.png': 'image/png',\n}\nADMIN_EMAILS = {email.strip().lower() for email in os.getenv('ADMIN_EMAILS', 'admin@eduvista.com').split(',') if email.strip()}\nSESSION_TTL_SECONDS = int(os.getenv('SESSION_TTL_SECONDS', str(8 * 60 * 60)))\nADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')",
         "detail": "app.main",
         "documentation": {}
     },
@@ -812,7 +1086,34 @@
         "kind": 5,
         "importPath": "app.main",
         "description": "app.main",
-        "peekOfCode": "ALLOWED_FILES = {\n    '.pdf': 'application/pdf',\n    '.jpg': 'image/jpeg',\n    '.jpeg': 'image/jpeg',\n    '.png': 'image/png',\n}\n@app.on_event('startup')\ndef startup():\n    init_db()\n@app.get('/', include_in_schema=False)",
+        "peekOfCode": "ALLOWED_FILES = {\n    '.pdf': 'application/pdf',\n    '.jpg': 'image/jpeg',\n    '.jpeg': 'image/jpeg',\n    '.png': 'image/png',\n}\nADMIN_EMAILS = {email.strip().lower() for email in os.getenv('ADMIN_EMAILS', 'admin@eduvista.com').split(',') if email.strip()}\nSESSION_TTL_SECONDS = int(os.getenv('SESSION_TTL_SECONDS', str(8 * 60 * 60)))\nADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')\ndef generate_faculty_code() -> str:",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "ADMIN_EMAILS",
+        "kind": 5,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "ADMIN_EMAILS = {email.strip().lower() for email in os.getenv('ADMIN_EMAILS', 'admin@eduvista.com').split(',') if email.strip()}\nSESSION_TTL_SECONDS = int(os.getenv('SESSION_TTL_SECONDS', str(8 * 60 * 60)))\nADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')\ndef generate_faculty_code() -> str:\n    return f'FAC-{secrets.token_hex(3).upper()}'\ndef hash_password(password: str) -> str:\n    salt = secrets.token_bytes(16)\n    digest = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 210_000)\n    return f'pbkdf2_sha256$210000${salt.hex()}${digest.hex()}'\ndef verify_password(password: str, encoded: str | None) -> bool:",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "SESSION_TTL_SECONDS",
+        "kind": 5,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "SESSION_TTL_SECONDS = int(os.getenv('SESSION_TTL_SECONDS', str(8 * 60 * 60)))\nADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')\ndef generate_faculty_code() -> str:\n    return f'FAC-{secrets.token_hex(3).upper()}'\ndef hash_password(password: str) -> str:\n    salt = secrets.token_bytes(16)\n    digest = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 210_000)\n    return f'pbkdf2_sha256$210000${salt.hex()}${digest.hex()}'\ndef verify_password(password: str, encoded: str | None) -> bool:\n    if not encoded or not encoded.startswith('pbkdf2_sha256$'):",
+        "detail": "app.main",
+        "documentation": {}
+    },
+    {
+        "label": "ADMIN_PASSWORD",
+        "kind": 5,
+        "importPath": "app.main",
+        "description": "app.main",
+        "peekOfCode": "ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')\ndef generate_faculty_code() -> str:\n    return f'FAC-{secrets.token_hex(3).upper()}'\ndef hash_password(password: str) -> str:\n    salt = secrets.token_bytes(16)\n    digest = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 210_000)\n    return f'pbkdf2_sha256$210000${salt.hex()}${digest.hex()}'\ndef verify_password(password: str, encoded: str | None) -> bool:\n    if not encoded or not encoded.startswith('pbkdf2_sha256$'):\n        return False",
         "detail": "app.main",
         "documentation": {}
     },
@@ -821,7 +1122,7 @@
         "kind": 6,
         "importPath": "app.schemas",
         "description": "app.schemas",
-        "peekOfCode": "class ORMModel(BaseModel):\n    model_config = ConfigDict(from_attributes=True)\nclass StudentCreate(BaseModel):\n    name: str = Field(min_length=2)\n    email: str\n    department: str\n    semester: int = Field(ge=1, le=8)\n    phone: str | None = None\n    attendance: float = Field(default=0, ge=0, le=100)\nclass StudentUpdate(StudentCreate):",
+        "peekOfCode": "class ORMModel(BaseModel):\n    model_config = ConfigDict(from_attributes=True)\nclass StudentCreate(BaseModel):\n    name: str = Field(min_length=2)\n    email: str\n    department: str\n    semester: int = Field(ge=1, le=8)\n    phone: str | None = None\n    attendance: float = Field(default=0, ge=0, le=100)\n    password: str = Field(min_length=8, max_length=128)",
         "detail": "app.schemas",
         "documentation": {}
     },
@@ -830,7 +1131,7 @@
         "kind": 6,
         "importPath": "app.schemas",
         "description": "app.schemas",
-        "peekOfCode": "class StudentCreate(BaseModel):\n    name: str = Field(min_length=2)\n    email: str\n    department: str\n    semester: int = Field(ge=1, le=8)\n    phone: str | None = None\n    attendance: float = Field(default=0, ge=0, le=100)\nclass StudentUpdate(StudentCreate):\n    pass\nclass FacultyCreate(BaseModel):",
+        "peekOfCode": "class StudentCreate(BaseModel):\n    name: str = Field(min_length=2)\n    email: str\n    department: str\n    semester: int = Field(ge=1, le=8)\n    phone: str | None = None\n    attendance: float = Field(default=0, ge=0, le=100)\n    password: str = Field(min_length=8, max_length=128)\nclass StudentUpdate(StudentCreate):\n    password: str | None = Field(default=None, min_length=8, max_length=128)",
         "detail": "app.schemas",
         "documentation": {}
     },
@@ -839,7 +1140,7 @@
         "kind": 6,
         "importPath": "app.schemas",
         "description": "app.schemas",
-        "peekOfCode": "class StudentUpdate(StudentCreate):\n    pass\nclass FacultyCreate(BaseModel):\n    name: str = Field(min_length=2)\n    email: str\n    department: str\n    phone: str | None = None\n    faculty_code: str = Field(default='2124', pattern=r'^2124$')\nclass FacultyLogin(BaseModel):\n    email: str",
+        "peekOfCode": "class StudentUpdate(StudentCreate):\n    password: str | None = Field(default=None, min_length=8, max_length=128)\nclass FacultyCreate(BaseModel):\n    name: str = Field(min_length=2)\n    email: str\n    department: str\n    phone: str | None = None\n    password: str = Field(min_length=8, max_length=128)\nclass FacultyLogin(BaseModel):\n    email: str",
         "detail": "app.schemas",
         "documentation": {}
     },
@@ -848,7 +1149,7 @@
         "kind": 6,
         "importPath": "app.schemas",
         "description": "app.schemas",
-        "peekOfCode": "class FacultyCreate(BaseModel):\n    name: str = Field(min_length=2)\n    email: str\n    department: str\n    phone: str | None = None\n    faculty_code: str = Field(default='2124', pattern=r'^2124$')\nclass FacultyLogin(BaseModel):\n    email: str\n    faculty_code: str = Field(pattern=r'^2124$')\nclass LoginRequest(BaseModel):",
+        "peekOfCode": "class FacultyCreate(BaseModel):\n    name: str = Field(min_length=2)\n    email: str\n    department: str\n    phone: str | None = None\n    password: str = Field(min_length=8, max_length=128)\nclass FacultyLogin(BaseModel):\n    email: str\n    otp: str = Field(pattern=r'^\\d{6}$')\nclass LoginRequest(BaseModel):",
         "detail": "app.schemas",
         "documentation": {}
     },
@@ -857,7 +1158,7 @@
         "kind": 6,
         "importPath": "app.schemas",
         "description": "app.schemas",
-        "peekOfCode": "class FacultyLogin(BaseModel):\n    email: str\n    faculty_code: str = Field(pattern=r'^2124$')\nclass LoginRequest(BaseModel):\n    role: Literal['student', 'faculty']\n    email: str\n    faculty_code: str | None = Field(default=None, pattern=r'^2124$')\nclass AcademicRecordCreate(BaseModel):\n    student_id: int\n    subject: str",
+        "peekOfCode": "class FacultyLogin(BaseModel):\n    email: str\n    otp: str = Field(pattern=r'^\\d{6}$')\nclass LoginRequest(BaseModel):\n    role: Literal['student', 'faculty', 'admin']\n    email: str\n    password: str = Field(min_length=1, max_length=128)\nclass OTPRequest(BaseModel):\n    role: Literal['student', 'faculty', 'admin']\n    email: str",
         "detail": "app.schemas",
         "documentation": {}
     },
@@ -866,7 +1167,43 @@
         "kind": 6,
         "importPath": "app.schemas",
         "description": "app.schemas",
-        "peekOfCode": "class LoginRequest(BaseModel):\n    role: Literal['student', 'faculty']\n    email: str\n    faculty_code: str | None = Field(default=None, pattern=r'^2124$')\nclass AcademicRecordCreate(BaseModel):\n    student_id: int\n    subject: str\n    semester: int = Field(ge=1, le=8)\n    internal_marks: float = Field(ge=0, le=100)\n    test_marks: float = Field(ge=0, le=100)",
+        "peekOfCode": "class LoginRequest(BaseModel):\n    role: Literal['student', 'faculty', 'admin']\n    email: str\n    password: str = Field(min_length=1, max_length=128)\nclass OTPRequest(BaseModel):\n    role: Literal['student', 'faculty', 'admin']\n    email: str\nclass OTPVerification(BaseModel):\n    role: Literal['student', 'faculty', 'admin']\n    email: str",
+        "detail": "app.schemas",
+        "documentation": {}
+    },
+    {
+        "label": "OTPRequest",
+        "kind": 6,
+        "importPath": "app.schemas",
+        "description": "app.schemas",
+        "peekOfCode": "class OTPRequest(BaseModel):\n    role: Literal['student', 'faculty', 'admin']\n    email: str\nclass OTPVerification(BaseModel):\n    role: Literal['student', 'faculty', 'admin']\n    email: str\n    otp: str = Field(pattern=r'^(?:\\d{4}|\\d{6})$')\nclass StudentSignupRequest(BaseModel):\n    name: str = Field(min_length=2)\n    email: str",
+        "detail": "app.schemas",
+        "documentation": {}
+    },
+    {
+        "label": "OTPVerification",
+        "kind": 6,
+        "importPath": "app.schemas",
+        "description": "app.schemas",
+        "peekOfCode": "class OTPVerification(BaseModel):\n    role: Literal['student', 'faculty', 'admin']\n    email: str\n    otp: str = Field(pattern=r'^(?:\\d{4}|\\d{6})$')\nclass StudentSignupRequest(BaseModel):\n    name: str = Field(min_length=2)\n    email: str\n    department: str\n    semester: int = Field(ge=1, le=8)\n    phone: str | None = None",
+        "detail": "app.schemas",
+        "documentation": {}
+    },
+    {
+        "label": "StudentSignupRequest",
+        "kind": 6,
+        "importPath": "app.schemas",
+        "description": "app.schemas",
+        "peekOfCode": "class StudentSignupRequest(BaseModel):\n    name: str = Field(min_length=2)\n    email: str\n    department: str\n    semester: int = Field(ge=1, le=8)\n    phone: str | None = None\n    password: str = Field(min_length=8, max_length=128)\nclass SemesterAssignmentCreate(BaseModel):\n    semester: int = Field(ge=1, le=8)\n    subject: str",
+        "detail": "app.schemas",
+        "documentation": {}
+    },
+    {
+        "label": "SemesterAssignmentCreate",
+        "kind": 6,
+        "importPath": "app.schemas",
+        "description": "app.schemas",
+        "peekOfCode": "class SemesterAssignmentCreate(BaseModel):\n    semester: int = Field(ge=1, le=8)\n    subject: str\n    title: str\n    due_date: str | None = None\n    status: Literal['pending', 'submitted', 'graded'] = 'pending'\n    score: float | None = Field(default=None, ge=0, le=100)\nclass AcademicRecordCreate(BaseModel):\n    student_id: int\n    subject: str",
         "detail": "app.schemas",
         "documentation": {}
     },
@@ -911,7 +1248,7 @@
         "kind": 6,
         "importPath": "app.schemas",
         "description": "app.schemas",
-        "peekOfCode": "class SubmissionCreate(BaseModel):\n    test_id: int\n    student_id: int\n    answer_paper: str = Field(min_length=1)\nclass AnnotationPoint(BaseModel):\n    x: float = Field(ge=0, le=1)\n    y: float = Field(ge=0, le=1)\nclass PenAnnotation(BaseModel):\n    page: int = Field(ge=1)\n    points: list[AnnotationPoint] = Field(min_length=2)",
+        "peekOfCode": "class SubmissionCreate(BaseModel):\n    test_id: int\n    student_id: int\n    answer_paper: str = Field(min_length=1)\nclass AnnotationPoint(BaseModel):\n    x: float = Field(ge=0, le=1)\n    y: float = Field(ge=0, le=1)\nclass PenAnnotation(BaseModel):\n    page: int = Field(ge=1)\n    points: list[AnnotationPoint] = Field(default_factory=list)",
         "detail": "app.schemas",
         "documentation": {}
     },
@@ -920,7 +1257,7 @@
         "kind": 6,
         "importPath": "app.schemas",
         "description": "app.schemas",
-        "peekOfCode": "class AnnotationPoint(BaseModel):\n    x: float = Field(ge=0, le=1)\n    y: float = Field(ge=0, le=1)\nclass PenAnnotation(BaseModel):\n    page: int = Field(ge=1)\n    points: list[AnnotationPoint] = Field(min_length=2)\n    color: str = Field(default='#d92d20', pattern=r'^#[0-9a-fA-F]{6}$')\n    width: float = Field(default=2, gt=0, le=20)\nclass CorrectionRequest(BaseModel):\n    score: float = Field(ge=0)",
+        "peekOfCode": "class AnnotationPoint(BaseModel):\n    x: float = Field(ge=0, le=1)\n    y: float = Field(ge=0, le=1)\nclass PenAnnotation(BaseModel):\n    page: int = Field(ge=1)\n    points: list[AnnotationPoint] = Field(default_factory=list)\n    color: str = Field(default='#d92d20', pattern=r'^#[0-9a-fA-F]{6}$')\n    width: float = Field(default=2, gt=0, le=20)\n    kind: Literal['pen', 'correct', 'wrong', 'comment'] = 'pen'\n    x: float | None = Field(default=None, ge=0, le=1)",
         "detail": "app.schemas",
         "documentation": {}
     },
@@ -929,7 +1266,25 @@
         "kind": 6,
         "importPath": "app.schemas",
         "description": "app.schemas",
-        "peekOfCode": "class PenAnnotation(BaseModel):\n    page: int = Field(ge=1)\n    points: list[AnnotationPoint] = Field(min_length=2)\n    color: str = Field(default='#d92d20', pattern=r'^#[0-9a-fA-F]{6}$')\n    width: float = Field(default=2, gt=0, le=20)\nclass CorrectionRequest(BaseModel):\n    score: float = Field(ge=0)\n    feedback: str | None = None\nclass ResultCreate(BaseModel):\n    student_id: int",
+        "peekOfCode": "class PenAnnotation(BaseModel):\n    page: int = Field(ge=1)\n    points: list[AnnotationPoint] = Field(default_factory=list)\n    color: str = Field(default='#d92d20', pattern=r'^#[0-9a-fA-F]{6}$')\n    width: float = Field(default=2, gt=0, le=20)\n    kind: Literal['pen', 'correct', 'wrong', 'comment'] = 'pen'\n    x: float | None = Field(default=None, ge=0, le=1)\n    y: float | None = Field(default=None, ge=0, le=1)\n    text: str | None = Field(default=None, max_length=500)\nclass ManualMark(BaseModel):",
+        "detail": "app.schemas",
+        "documentation": {}
+    },
+    {
+        "label": "ManualMark",
+        "kind": 6,
+        "importPath": "app.schemas",
+        "description": "app.schemas",
+        "peekOfCode": "class ManualMark(BaseModel):\n    question: int = Field(ge=1)\n    result: Literal['correct', 'wrong', 'clear'] = 'clear'\n    marks: float = Field(default=0, ge=0)\nclass ManualReviewSave(BaseModel):\n    annotations: list[PenAnnotation] = Field(default_factory=list)\n    marks: list[ManualMark] = Field(default_factory=list)\n    score: float | None = Field(default=None, ge=0)\n    feedback: str | None = Field(default=None, max_length=4000)\n    review_mode: Literal['manual'] = 'manual'",
+        "detail": "app.schemas",
+        "documentation": {}
+    },
+    {
+        "label": "ManualReviewSave",
+        "kind": 6,
+        "importPath": "app.schemas",
+        "description": "app.schemas",
+        "peekOfCode": "class ManualReviewSave(BaseModel):\n    annotations: list[PenAnnotation] = Field(default_factory=list)\n    marks: list[ManualMark] = Field(default_factory=list)\n    score: float | None = Field(default=None, ge=0)\n    feedback: str | None = Field(default=None, max_length=4000)\n    review_mode: Literal['manual'] = 'manual'\nclass CorrectionRequest(BaseModel):\n    score: float = Field(ge=0)\n    feedback: str | None = None\nclass ResultCreate(BaseModel):",
         "detail": "app.schemas",
         "documentation": {}
     },
@@ -1003,6 +1358,33 @@
         "description": "app.services",
         "peekOfCode": "_MODEL = None\nif RandomForestClassifier:\n    _MODEL = RandomForestClassifier(n_estimators=40, random_state=42, max_depth=4)\n    _MODEL.fit(np.array([[95, 90, 92, 90], [82, 78, 80, 75], [60, 55, 58, 50], [35, 40, 42, 30], [72, 68, 70, 65]]), ['Low', 'Low', 'Medium', 'High', 'Medium'])\ndef student_features(student_id: int) -> tuple[list[float], dict[str, Any]]:\n    student = query('SELECT * FROM students WHERE id = ?', [student_id])\n    if not student:\n        raise ValueError('Student not found')\n    records = query('SELECT internal_marks, test_marks, previous_semester_marks, percentile_12th FROM academic_records WHERE student_id = ?', [student_id])\n    attendance = query('SELECT COALESCE(SUM(classes_attended), 0) attended, COALESCE(SUM(classes_held), 0) held FROM attendance WHERE student_id = ?', [student_id])[0]",
         "detail": "app.services",
+        "documentation": {}
+    },
+    {
+        "label": "send_email",
+        "kind": 2,
+        "importPath": "app.smtp_service",
+        "description": "app.smtp_service",
+        "peekOfCode": "def send_email(recipient: str, subject: str, body: str) -> None:\n    host = os.getenv('SMTP_HOST', 'smtp.gmail.com')\n    port = int(os.getenv('SMTP_PORT', '587'))\n    username = os.getenv('SMTP_USERNAME', 'Nmcbca2010@gmail.com')\n    password = os.getenv('SMTP_PASSWORD')\n    sender = os.getenv('SMTP_FROM', username)\n    if not password:\n        raise RuntimeError('SMTP_PASSWORD is not set. Configure a Gmail app password before sending email.')\n    message = EmailMessage()\n    message['Subject'] = subject",
+        "detail": "app.smtp_service",
+        "documentation": {}
+    },
+    {
+        "label": "send_otp_email",
+        "kind": 2,
+        "importPath": "app.smtp_service",
+        "description": "app.smtp_service",
+        "peekOfCode": "def send_otp_email(recipient: str, otp: str, subject: str = 'Prediction verification code') -> None:\n    send_email(\n        recipient,\n        subject,\n        f'Your Prediction verification code is {otp}. It expires in 10 minutes.\\n\\n'\n        'If you did not request this code, you can ignore this email.'\n    )",
+        "detail": "app.smtp_service",
+        "documentation": {}
+    },
+    {
+        "label": "BASE_DIR",
+        "kind": 5,
+        "importPath": "app.smtp_service",
+        "description": "app.smtp_service",
+        "peekOfCode": "BASE_DIR = Path(__file__).resolve().parent.parent\nload_dotenv(BASE_DIR / '.env')\ndef send_email(recipient: str, subject: str, body: str) -> None:\n    host = os.getenv('SMTP_HOST', 'smtp.gmail.com')\n    port = int(os.getenv('SMTP_PORT', '587'))\n    username = os.getenv('SMTP_USERNAME', 'Nmcbca2010@gmail.com')\n    password = os.getenv('SMTP_PASSWORD')\n    sender = os.getenv('SMTP_FROM', username)\n    if not password:\n        raise RuntimeError('SMTP_PASSWORD is not set. Configure a Gmail app password before sending email.')",
+        "detail": "app.smtp_service",
         "documentation": {}
     },
     {

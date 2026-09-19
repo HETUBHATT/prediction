@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,9 @@
   <!-- EduVista Master Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
@@ -55,10 +58,10 @@
     }
 
     /* 2. Global Resets & Page Structure */
-    * { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0; 
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
       font-family: 'Plus Jakarta Sans', sans-serif;
       transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     }
@@ -77,7 +80,8 @@
     }
 
     /* Decorative Ambient Glows */
-    .ambient-glow-1, .ambient-glow-2 {
+    .ambient-glow-1,
+    .ambient-glow-2 {
       position: absolute;
       border-radius: 50%;
       filter: blur(80px);
@@ -85,6 +89,7 @@
       pointer-events: none;
       opacity: 0.5;
     }
+
     .ambient-glow-1 {
       width: 300px;
       height: 300px;
@@ -92,6 +97,7 @@
       top: -50px;
       left: -50px;
     }
+
     .ambient-glow-2 {
       width: 350px;
       height: 350px;
@@ -328,29 +334,35 @@
       body {
         padding: 1.5rem 1rem;
       }
+
       .theme-switch-wrapper {
         top: 1rem;
         right: 1rem;
       }
+
       .card {
         padding: 1.75rem 1.4rem;
         border-radius: 20px;
       }
+
       .brand-logo-svg {
         width: 48px;
         height: 48px;
         min-width: 48px;
         min-height: 48px;
       }
+
       .brand-title {
         font-size: 1.5rem;
       }
+
       .card-title {
         font-size: 1.25rem;
       }
     }
   </style>
 </head>
+
 <body>
 
   <!-- Background Visual Elements -->
@@ -370,9 +382,15 @@
       <svg class="brand-logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
         <circle cx="100" cy="100" r="95" fill="#faf8f4" stroke="#5b6e58" stroke-width="4" />
         <circle cx="100" cy="100" r="90" fill="none" stroke="#bfa054" stroke-width="2" />
-        <path d="M100 120 C75 105 45 110 30 115 L30 128 C45 123 75 118 100 135 C125 118 155 123 170 128 L170 115 C155 110 125 105 100 120 Z" fill="#243d2c" />
-        <path d="M100 110 C80 97 50 101 35 105 L35 115 C50 111 80 107 100 122 C120 107 150 111 165 115 L165 105 C150 101 120 97 100 110 Z" fill="#d4b465" />
-        <path d="M100 101 C83 90 55 93 40 96 L40 104 C55 101 83 98 100 111 C117 98 145 101 160 104 L160 96 C145 93 117 90 100 101 Z" fill="#e2cb91" />
+        <path
+          d="M100 120 C75 105 45 110 30 115 L30 128 C45 123 75 118 100 135 C125 118 155 123 170 128 L170 115 C155 110 125 105 100 120 Z"
+          fill="#243d2c" />
+        <path
+          d="M100 110 C80 97 50 101 35 105 L35 115 C50 111 80 107 100 122 C120 107 150 111 165 115 L165 105 C150 101 120 97 100 110 Z"
+          fill="#d4b465" />
+        <path
+          d="M100 101 C83 90 55 93 40 96 L40 104 C55 101 83 98 100 111 C117 98 145 101 160 104 L160 96 C145 93 117 90 100 101 Z"
+          fill="#e2cb91" />
         <rect x="88" y="80" width="10" height="24" rx="2" fill="#d4b465" />
         <rect x="103" y="72" width="10" height="32" rx="2" fill="#c4a148" />
         <rect x="118" y="60" width="10" height="44" rx="2" fill="#6c8866" />
@@ -381,7 +399,8 @@
         <polygon points="76,47 76,60 100,68 124,60 124,47" fill="#33503b" />
         <path d="M100 40 L125 50 L125 64" stroke="#d4b465" stroke-width="3" stroke-linecap="round" fill="none" />
         <circle cx="125" cy="66" r="3" fill="#d4b465" />
-        <path d="M65 82 L77 72 L90 78 L112 58 L142 36" stroke="#243d2c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+        <path d="M65 82 L77 72 L90 78 L112 58 L142 36" stroke="#243d2c" stroke-width="4" stroke-linecap="round"
+          stroke-linejoin="round" fill="none" />
         <polygon points="138,32 147,32 144,41" fill="#243d2c" />
         <circle cx="77" cy="72" r="4" fill="#faf8f4" stroke="#243d2c" stroke-width="3" />
         <circle cx="90" cy="78" r="4" fill="#faf8f4" stroke="#243d2c" stroke-width="3" />
@@ -417,7 +436,9 @@
         <label class="remember-me">
           <input type="checkbox" id="rememberMe"> Keep me logged in
         </label>
-        <a href="#" class="forgot-link" onclick="event.preventDefault(); showAlert('Please contact your system administrator to reset password.', 'error');">Forgot Password?</a>
+        <a href="#" class="forgot-link"
+          onclick="event.preventDefault(); showAlert('Please contact your system administrator to reset password.', 'error');">Forgot
+          Password?</a>
       </div>
 
       <button type="submit" class="btn-submit">
@@ -457,7 +478,7 @@
     }
 
     // Load saved or system preferred theme
-    const savedTheme = localStorage.getItem('eduvista_theme') || 
+    const savedTheme = localStorage.getItem('eduvista_theme') ||
       (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     applyTheme(savedTheme);
 
@@ -489,10 +510,10 @@
             sessionStorage.setItem('ev_sid', data.account_id);
             sessionStorage.setItem('ev_name', data.name);
             sessionStorage.setItem('ev_role', data.role);
+            localStorage.setItem('eduvistaUser', JSON.stringify(data));
             showAlert('Login successful! Redirecting…', 'success');
             setTimeout(() => {
-              if (data.role === 'student') window.location.href = '/student/portal';
-              else window.location.href = '/dashboard';
+              window.location.href = '/dashboard';
             }, 1000);
             success = true; break;
           }
@@ -509,4 +530,5 @@
     }
   </script>
 </body>
+
 </html>

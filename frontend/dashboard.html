@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/frontend/dashboard.css">
+    <link rel="stylesheet" href="/frontend/dashboard.css?v=student-panels-1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 
@@ -26,6 +26,10 @@
             <nav class="nav-list" aria-label="Main navigation">
                 <button class="nav-item active" data-view="home"><i
                         class="fa-solid fa-grid-2"></i><span>Overview</span></button>
+                <button class="nav-item student-nav" data-view="student-assignments"><i
+                        class="fa-solid fa-list-check"></i><span>Assignments</span></button>
+                <button class="nav-item student-nav" data-view="student-upload"><i
+                        class="fa-solid fa-cloud-arrow-up"></i><span>Upload papers</span></button>
                 <button class="nav-item admin-only" data-view="students"><i
                         class="fa-solid fa-user-graduate"></i><span>Students</span></button>
                 <button class="nav-item admin-only" data-view="faculty"><i
@@ -42,8 +46,8 @@
                 <button class="nav-item" data-view="reports"><i
                         class="fa-solid fa-file-export"></i><span>Reports</span></button>
             </nav>
-            <div class="sidebar-footer"><a class="sidebar-action docs-action" href="/docs" target="_blank"
-                    rel="noopener"><i class="fa-solid fa-code"></i><span>API docs</span></a><button
+            <div class="sidebar-footer"><a class="sidebar-action docs-action admin-restricted" href="/docs"
+                    target="_blank" rel="noopener"><i class="fa-solid fa-code"></i><span>API docs</span></a><button
                     class="sidebar-action logout-action" id="logoutButton" type="button"><i
                         class="fa-solid fa-arrow-right-from-bracket"></i><span>Sign out</span></button></div>
         </aside>
@@ -62,7 +66,7 @@
             </header>
             <div id="notice" class="notice" role="status"></div>
             <section id="view-home" class="view active-view">
-                <div class="hero">
+                <div class="hero admin-only">
                     <div>
                         <p class="eyebrow">A clearer picture of progress</p>
                         <h2>Small signals. Better support.</h2>
@@ -70,7 +74,7 @@
                     </div>
                     <div class="hero-orbit"><i class="fa-solid fa-seedling"></i><span>Live academic pulse</span></div>
                 </div>
-                <div class="metric-grid" id="metrics">
+                <div class="metric-grid admin-only" id="metrics">
                     <div class="metric-card"><span class="metric-icon sage"><i
                                 class="fa-solid fa-user-graduate"></i></span>
                         <div><strong>--</strong><small>Students</small></div>
@@ -88,7 +92,7 @@
                         <div><strong>--</strong><small>Average marks</small></div>
                     </div>
                 </div>
-                <div class="content-grid">
+                <div class="content-grid admin-only">
                     <article class="panel pulse-panel">
                         <div class="panel-heading">
                             <div>
@@ -116,6 +120,134 @@
                                     class="fa-solid fa-calendar-plus"></i><span>Record attendance</span></button><button
                                 class="quick-action" data-view-link="reports"><i
                                     class="fa-solid fa-download"></i><span>Export report</span></button></div>
+                    </article>
+                </div>
+                <div class="student-only" id="studentDashboardPanel">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">Your academic workspace</p>
+                            <h2>Student dashboard</h2>
+                        </div>
+                    </div>
+                    <div class="metric-grid" id="studentMetrics">
+                        <div class="metric-card"><span class="metric-icon sage"><i
+                                    class="fa-solid fa-calendar-check"></i></span>
+                            <div><strong>--</strong><small>Attendance</small></div>
+                        </div>
+                        <div class="metric-card"><span class="metric-icon gold"><i
+                                    class="fa-solid fa-list-check"></i></span>
+                            <div><strong>--</strong><small>Pending assignments</small></div>
+                        </div>
+                        <div class="metric-card"><span class="metric-icon blue"><i
+                                    class="fa-solid fa-file-pen"></i></span>
+                            <div><strong>--</strong><small>Tests</small></div>
+                        </div>
+                        <div class="metric-card"><span class="metric-icon rose"><i
+                                    class="fa-solid fa-shield-heart"></i></span>
+                            <div><strong>--</strong><small>Risk level</small></div>
+                        </div>
+                    </div>
+                    <div class="content-grid">
+                        <article class="panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <p class="eyebrow">Upcoming work</p>
+                                    <h3>Assignments</h3>
+                                </div>
+                            </div>
+                            <div id="studentAssignments" class="stack-list">
+                                <div class="empty-state">Loading assignments...</div>
+                            </div>
+                        </article>
+                        <article class="panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <p class="eyebrow">Assessment activity</p>
+                                    <h3>Tests and submissions</h3>
+                                </div>
+                            </div>
+                            <div id="studentTests" class="stack-list">
+                                <div class="empty-state">Loading tests...</div>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </section>
+            <section id="view-student-assignments" class="view student-only">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Student work</p>
+                        <h2>Assignments</h2>
+                    </div>
+                </div>
+                <div class="content-grid">
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <p class="eyebrow">Assigned work</p>
+                                <h3>My assignments</h3>
+                            </div>
+                        </div>
+                        <div id="studentAssignmentsPage" class="stack-list">
+                            <div class="empty-state">Loading assignments...</div>
+                        </div>
+                    </article>
+                    <article class="panel form-panel">
+                        <div class="panel-heading">
+                            <div>
+                                <p class="eyebrow">Assignment work</p>
+                                <h3>Upload assignment</h3>
+                            </div>
+                        </div>
+                        <p class="helper">Choose an assignment and upload your answer as PDF, JPG, or PNG.</p>
+                        <form id="studentAssignmentUpload" class="student-upload-form">
+                            <label>Assignment<select id="studentAssignmentId" required>
+                                    <option value="">Loading assignments...</option>
+                                </select></label>
+                            <label>Answer file<input id="studentAssignmentFile" type="file"
+                                    accept=".pdf,.jpg,.jpeg,.png" required></label>
+                            <button class="primary-button" type="submit"><i class="fa-solid fa-cloud-arrow-up"></i>
+                                Upload assignment</button>
+                        </form>
+                    </article>
+                </div>
+            </section>
+            <section id="view-student-upload" class="view student-only">
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Assessment work</p>
+                        <h2>Upload papers</h2>
+                    </div>
+                </div>
+                <div class="content-grid">
+                    <article class="panel form-panel">
+                        <div class="panel-heading">
+                            <div>
+                                <p class="eyebrow">Test submission</p>
+                                <h3>Upload test paper</h3>
+                            </div>
+                        </div>
+                        <p class="helper">Choose the test and upload your answer paper as PDF, JPG, or PNG.</p>
+                        <form id="studentTestUpload" class="student-upload-form">
+                            <label>Test<select id="studentTestId" required>
+                                    <option value="">Loading tests...</option>
+                                </select></label>
+                            <label>Answer paper<input id="studentTestFile" type="file" accept=".pdf,.jpg,.jpeg,.png"
+                                    required></label>
+                            <button class="primary-button" type="submit"><i class="fa-solid fa-paper-plane"></i> Submit
+                                paper</button>
+                        </form>
+                    </article>
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <p class="eyebrow">Assessment activity</p>
+                                <h3>My tests</h3>
+                            </div>
+                        </div>
+                        <div id="studentTestsPage" class="stack-list">
+                            <div class="empty-state">Loading tests...</div>
+                        </div>
                     </article>
                 </div>
             </section>
@@ -482,7 +614,7 @@
             <p id="loginError" class="form-error"></p>
         </div>
     </div>
-    <script src="/frontend/dashboard.js"></script>
+    <script src="/frontend/dashboard.js?v=login-fallback-1"></script>
 </body>
 
 </html>

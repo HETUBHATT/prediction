@@ -42,7 +42,9 @@ SCHEMA = (
     """CREATE TABLE IF NOT EXISTS assignments (
         id SERIAL PRIMARY KEY, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
         subject TEXT NOT NULL, title TEXT NOT NULL, due_date TEXT, status TEXT NOT NULL DEFAULT 'pending',
-        score DOUBLE PRECISION, UNIQUE(student_id, subject, title))""",
+        score DOUBLE PRECISION, submission_file_name TEXT, submission_file_path TEXT,
+        submission_content_type TEXT, submission_file_size INTEGER, submitted_at TIMESTAMPTZ,
+        UNIQUE(student_id, subject, title))""",
     """CREATE TABLE IF NOT EXISTS tests (
         id SERIAL PRIMARY KEY, faculty_id INTEGER REFERENCES faculty(id), subject TEXT NOT NULL,
         title TEXT NOT NULL, total_marks DOUBLE PRECISION NOT NULL, scheduled_at TEXT, question_paper TEXT,
@@ -83,6 +85,11 @@ def init_db():
         conn.execute('ALTER TABLE faculty ADD COLUMN IF NOT EXISTS faculty_code_hash TEXT')
         conn.execute('ALTER TABLE faculty ADD COLUMN IF NOT EXISTS password_hash TEXT')
         conn.execute('ALTER TABLE students ADD COLUMN IF NOT EXISTS password_hash TEXT')
+        conn.execute('ALTER TABLE assignments ADD COLUMN IF NOT EXISTS submission_file_name TEXT')
+        conn.execute('ALTER TABLE assignments ADD COLUMN IF NOT EXISTS submission_file_path TEXT')
+        conn.execute('ALTER TABLE assignments ADD COLUMN IF NOT EXISTS submission_content_type TEXT')
+        conn.execute('ALTER TABLE assignments ADD COLUMN IF NOT EXISTS submission_file_size INTEGER')
+        conn.execute('ALTER TABLE assignments ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMPTZ')
         conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS file_name TEXT')
         conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS file_path TEXT')
         conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS content_type TEXT')

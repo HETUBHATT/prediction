@@ -26,24 +26,26 @@
             <nav class="nav-list" aria-label="Main navigation">
                 <button class="nav-item active" data-view="home"><i
                         class="fa-solid fa-grid-2"></i><span>Overview</span></button>
-                <button class="nav-item" data-view="students"><i
+                <button class="nav-item admin-only" data-view="students"><i
                         class="fa-solid fa-user-graduate"></i><span>Students</span></button>
-                <button class="nav-item" data-view="faculty"><i
+                <button class="nav-item admin-only" data-view="faculty"><i
                         class="fa-solid fa-chalkboard-user"></i><span>Faculty</span></button>
-                <button class="nav-item" data-view="tests"><i class="fa-solid fa-file-pen"></i><span>Tests &
+                <button class="nav-item admin-only" data-view="tests"><i class="fa-solid fa-file-pen"></i><span>Tests &
                         submissions</span></button>
-                <button class="nav-item" data-view="attendance"><i
+                <button class="nav-item admin-only" data-view="attendance"><i
                         class="fa-solid fa-calendar-check"></i><span>Attendance</span></button>
-                <button class="nav-item" data-view="assignments"><i
+                <button class="nav-item admin-only" data-view="assignments"><i
                         class="fa-solid fa-list-check"></i><span>Assignments</span></button>
-                <button class="nav-item" data-view="results"><i class="fa-solid fa-chart-line"></i><span>Results &
+                <button class="nav-item admin-only" data-view="results"><i
+                        class="fa-solid fa-chart-line"></i><span>Results &
                         risk</span></button>
                 <button class="nav-item" data-view="reports"><i
                         class="fa-solid fa-file-export"></i><span>Reports</span></button>
             </nav>
-            <div class="sidebar-footer"><a href="/docs" target="_blank"><i class="fa-solid fa-code"></i> API
-                    docs</a><button id="logoutButton"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign
-                    out</button></div>
+            <div class="sidebar-footer"><a class="sidebar-action docs-action" href="/docs" target="_blank"
+                    rel="noopener"><i class="fa-solid fa-code"></i><span>API docs</span></a><button
+                    class="sidebar-action logout-action" id="logoutButton" type="button"><i
+                        class="fa-solid fa-arrow-right-from-bracket"></i><span>Sign out</span></button></div>
         </aside>
         <main class="main-content">
             <header class="topbar"><button class="icon-button menu-button" id="menuButton"
@@ -106,18 +108,18 @@
                                 <h3>Move work forward</h3>
                             </div>
                         </div>
-                        <div class="quick-grid"><button class="quick-action" data-view-link="students"><i
+                        <div class="quick-grid"><button class="quick-action admin-only" data-view-link="students"><i
                                     class="fa-solid fa-user-plus"></i><span>Add student</span></button><button
-                                class="quick-action" data-view-link="tests"><i
+                                class="quick-action admin-only" data-view-link="tests"><i
                                     class="fa-solid fa-cloud-arrow-up"></i><span>Submit paper</span></button><button
-                                class="quick-action" data-view-link="attendance"><i
+                                class="quick-action admin-only" data-view-link="attendance"><i
                                     class="fa-solid fa-calendar-plus"></i><span>Record attendance</span></button><button
                                 class="quick-action" data-view-link="reports"><i
                                     class="fa-solid fa-download"></i><span>Export report</span></button></div>
                     </article>
                 </div>
             </section>
-            <section id="view-students" class="view">
+            <section id="view-students" class="view admin-only">
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">Student management</p>
@@ -140,11 +142,12 @@
                                         <th>Department</th>
                                         <th>Semester</th>
                                         <th>Attendance</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="studentsTable">
                                     <tr>
-                                        <td colspan="5" class="empty-state">Loading students...</td>
+                                        <td colspan="6" class="empty-state">Loading students...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -162,14 +165,16 @@
                                         placeholder="Computer Science"></label><label>Semester<input name="semester"
                                         type="number" min="1" max="8" required
                                         placeholder="3"></label><label>Phone<input name="phone"
-                                        placeholder="Optional"></label><label>Attendance<input name="attendance"
-                                        type="number" min="0" max="100" value="0"></label></div><button
-                                class="primary-button" type="submit">Save student</button>
+                                        placeholder="Optional"></label><label>Password<input name="password"
+                                        type="password" minlength="8" required
+                                        placeholder="At least 8 characters"></label><label>Attendance<input
+                                        name="attendance" type="number" min="0" max="100" value="0"></label></div>
+                            <button class="primary-button" type="submit">Save student</button>
                         </form>
                     </article>
                 </div>
             </section>
-            <section id="view-faculty" class="view">
+            <section id="view-faculty" class="view admin-only">
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">Faculty management</p>
@@ -205,7 +210,7 @@
                         <div class="panel-heading">
                             <h3>Register faculty</h3>
                         </div>
-                        <p class="helper">The shared faculty access code is <strong>2124</strong>.</p>
+                        <p class="helper">Faculty members verify their registered email with a one-time code.</p>
                         <form data-api-form="faculty">
                             <div class="field-grid"><label>Name<input name="name" required minlength="2"
                                         placeholder="Dr. Meera Shah"></label><label>Email<input name="email"
@@ -213,14 +218,16 @@
                                         placeholder="faculty@campus.edu"></label><label>Department<input
                                         name="department" required
                                         placeholder="Computer Science"></label><label>Phone<input name="phone"
-                                        placeholder="Optional"></label><input type="hidden" name="faculty_code"
-                                    value="2124"></div><button class="primary-button" type="submit">Register
+                                        placeholder="Optional"></label><label>Password<input name="password"
+                                        type="password" minlength="8" required
+                                        placeholder="At least 8 characters"></label></div><button class="primary-button"
+                                type="submit">Register
                                 faculty</button>
                         </form>
                     </article>
                 </div>
             </section>
-            <section id="view-tests" class="view">
+            <section id="view-tests" class="view admin-only">
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">Assessment desk</p>
@@ -330,7 +337,7 @@
                     </div>
                 </article>
             </section>
-            <section id="view-attendance" class="view">
+            <section id="view-attendance" class="view admin-only">
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">Attendance management</p>
@@ -362,7 +369,7 @@
                     </article>
                 </div>
             </section>
-            <section id="view-assignments" class="view">
+            <section id="view-assignments" class="view admin-only">
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">Assignment tracking</p>
@@ -397,7 +404,7 @@
                     </article>
                 </div>
             </section>
-            <section id="view-results" class="view">
+            <section id="view-results" class="view admin-only">
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">Academic outcomes</p>
@@ -421,11 +428,15 @@
                     </article>
                     <article class="panel">
                         <div class="panel-heading">
-                            <h3>Student risk profile</h3>
+                            <h3>Student results & risk</h3>
                         </div>
-                        <form class="inline-form" data-lookup="risk"><input name="student_id" type="number" required
-                                placeholder="Student ID"><button class="secondary-button">Analyze</button></form>
-                        <div id="riskResult" class="risk-result"></div>
+                        <form class="inline-form" data-lookup="student-insights"><input name="student_id" type="number"
+                                required placeholder="Student ID"><button class="secondary-button"><i
+                                    class="fa-solid fa-magnifying-glass"></i> View details</button></form>
+                        <div id="studentInsights" class="student-insights">
+                            <div class="empty-state">Enter a student ID to view results, subject risks, and support
+                                tips.</div>
+                        </div>
                     </article>
                 </div>
             </section>
@@ -457,17 +468,17 @@
             </div>
             <p class="eyebrow">Welcome back</p>
             <h2>Open your academic workspace.</h2>
-            <p class="login-copy">Choose your role to continue. Faculty access uses the registered email and static code
-                2124.</p>
+            <p class="login-copy">Sign in directly with your role credentials.</p>
+            <span id="facultyCodeField" class="hidden" aria-hidden="true"></span>
             <form id="loginForm"><label>Role<select name="role" id="loginRole">
                         <option value="student">Student</option>
                         <option value="faculty">Faculty</option>
+                        <option value="admin">Admin</option>
                     </select></label><label>Email<input name="email" type="email" required
-                        placeholder="you@campus.edu"></label><label id="facultyCodeField" class="hidden">Faculty
-                    code<input name="faculty_code" inputmode="numeric" pattern="2124" maxlength="4"
-                        placeholder="2124"></label><button class="primary-button" type="submit">Enter workspace <i
-                        class="fa-solid fa-arrow-right"></i></button></form><button class="guest-button"
-                id="guestButton">Continue as a viewer</button>
+                        placeholder="you@campus.edu"></label><label>Password<input name="password" type="password"
+                        required placeholder="Your password"></label><button class="primary-button" type="submit"
+                    id="loginButton">Sign in <i class="fa-solid fa-arrow-right"></i></button></form><button
+                id="guestButton" hidden type="button"></button>
             <p id="loginError" class="form-error"></p>
         </div>
     </div>

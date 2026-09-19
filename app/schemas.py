@@ -12,25 +12,51 @@ class StudentCreate(BaseModel):
     semester: int = Field(ge=1, le=8)
     phone: str | None = None
     attendance: float = Field(default=0, ge=0, le=100)
+    password: str = Field(min_length=8, max_length=128)
 
 class StudentUpdate(StudentCreate):
-    pass
+    password: str | None = Field(default=None, min_length=8, max_length=128)
 
 class FacultyCreate(BaseModel):
     name: str = Field(min_length=2)
     email: str
     department: str
     phone: str | None = None
-    faculty_code: str = Field(default='2124', pattern=r'^2124$')
+    password: str = Field(min_length=8, max_length=128)
 
 class FacultyLogin(BaseModel):
     email: str
-    faculty_code: str = Field(pattern=r'^2124$')
+    otp: str = Field(pattern=r'^\d{6}$')
 
 class LoginRequest(BaseModel):
-    role: Literal['student', 'faculty']
+    role: Literal['student', 'faculty', 'admin']
     email: str
-    faculty_code: str | None = Field(default=None, pattern=r'^2124$')
+    password: str = Field(min_length=1, max_length=128)
+
+class OTPRequest(BaseModel):
+    role: Literal['student', 'faculty', 'admin']
+    email: str
+
+class OTPVerification(BaseModel):
+    role: Literal['student', 'faculty', 'admin']
+    email: str
+    otp: str = Field(pattern=r'^(?:\d{4}|\d{6})$')
+
+class StudentSignupRequest(BaseModel):
+    name: str = Field(min_length=2)
+    email: str
+    department: str
+    semester: int = Field(ge=1, le=8)
+    phone: str | None = None
+    password: str = Field(min_length=8, max_length=128)
+
+class SemesterAssignmentCreate(BaseModel):
+    semester: int = Field(ge=1, le=8)
+    subject: str
+    title: str
+    due_date: str | None = None
+    status: Literal['pending', 'submitted', 'graded'] = 'pending'
+    score: float | None = Field(default=None, ge=0, le=100)
 
 class AcademicRecordCreate(BaseModel):
     student_id: int

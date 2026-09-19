@@ -20,6 +20,26 @@ $env:DATABASE_URL = "postgresql://postgres:<password>@localhost:5432/prediction"
 python app/main.py
 ```
 
+Direct password login is used for administrators, faculty, and students. Set the administrator credentials and session lifetime in `.env`:
+
+```powershell
+$env:ADMIN_EMAILS = "admin@eduvista.com"
+$env:ADMIN_PASSWORD = "<strong-admin-password>"
+$env:SESSION_TTL_SECONDS = "28800"
+```
+
+New student and faculty accounts must have passwords of at least eight characters. Existing records created before this change have no password hash and must be assigned a password through an account migration or administrative reset before they can sign in.
+
+SMTP is no longer required for authentication. It may still be configured for other application email workflows by setting the Gmail values in `.env`:
+
+```powershell
+$env:SMTP_USERNAME = "Nmcbca2010@gmail.com"
+$env:SMTP_FROM = "Nmcbca2010@gmail.com"
+$env:SMTP_PASSWORD = "<gmail-app-password>"
+```
+
+The app uses Gmail SMTP on `smtp.gmail.com` port `587` with STARTTLS. Do not use the normal Gmail account password or commit `.env`.
+
 Uploaded submission files remain on disk under `data/submissions` by default. Set `UPLOAD_DIR` to change that location.
 
 To migrate the existing SQLite database into PostgreSQL, create the PostgreSQL database first, set `DATABASE_URL`, and run:
@@ -37,11 +57,11 @@ python migrate_sqlite_to_postgres.py
 - `/predictions`, `/analytics`
 - `/reports`
 
-Use `POST /login` and choose either `student` or `faculty`. Faculty accounts use the static code `2124` with the officially registered email:
+`POST /login` returns a bearer session token for API clients:
 
 ```json
 POST /login
-{"role":"faculty","email":"faculty@example.com","faculty_code":"2124"}
+{"role":"faculty","email":"faculty@example.com","password":"<password>"}
 ```
 
-Use the returned `faculty_id` and `faculty_code=2124` on faculty submission endpoints. No bearer token is required.
+Send the returned `auth_token` as `Authorization: Bearer <token>`. Sessions are persisted in PostgreSQL and expire after `SESSION_TTL_SECONDS`. The legacy OTP endpoints return `410 Gone` and are retained only so older clients fail clearly.

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login — EduVista</title>
+  <title>Login ï¿½ EduVista</title>
 
   <!-- EduVista Master Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -408,7 +408,7 @@
         <label for="password">Password</label>
         <div class="input-wrapper">
           <i class="fa-solid fa-lock input-icon"></i>
-          <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+          <input type="password" id="password" class="form-control" placeholder="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" required>
           <i class="fa-regular fa-eye toggle-password" id="togglePassword"></i>
         </div>
       </div>
@@ -468,17 +468,37 @@
     });
 
     // 3. Form Submission Handling
-    document.getElementById('loginForm').addEventListener('submit', function (e) {
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
       e.preventDefault();
-
-      const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
+      if (!email || !password) { showAlert('Please enter both email and password.', 'error'); return; }
 
-      if (username && password) {
-        showAlert('Authentication successful! Redirecting...', 'success');
-      } else {
-        showAlert('Please enter both username and password.', 'error');
+      // Detect role: try student first, then faculty, then admin
+      const roles = ['student', 'faculty', 'admin'];
+      let success = false;
+      for (const role of roles) {
+        try {
+          const res = await fetch('http://127.0.0.1:4009/login', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role, email, password })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            sessionStorage.setItem('ev_token', data.auth_token);
+            sessionStorage.setItem('ev_sid', data.account_id);
+            sessionStorage.setItem('ev_name', data.name);
+            sessionStorage.setItem('ev_role', data.role);
+            showAlert('Login successful! Redirectingâ€¦', 'success');
+            setTimeout(() => {
+              if (data.role === 'student') window.location.href = '/student/portal';
+              else window.location.href = '/dashboard';
+            }, 1000);
+            success = true; break;
+          }
+        } catch { /* try next role */ }
       }
+      if (!success) showAlert('Invalid credentials. Please try again.', 'error');
     });
 
     function showAlert(message, type) {

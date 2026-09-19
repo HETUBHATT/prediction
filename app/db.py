@@ -1,4 +1,3 @@
-import hashlib
 import os
 import re
 from contextlib import contextmanager
@@ -29,7 +28,7 @@ SCHEMA = (
         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)""",
     """CREATE TABLE IF NOT EXISTS faculty (
         id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,
-        department TEXT NOT NULL, phone TEXT, faculty_code_hash TEXT,
+        department TEXT NOT NULL, phone TEXT, faculty_code_hash TEXT, password_hash TEXT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)""",
     """CREATE TABLE IF NOT EXISTS academic_records (
         id SERIAL PRIMARY KEY, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
@@ -55,6 +54,10 @@ SCHEMA = (
         annotations_json TEXT NOT NULL DEFAULT '[]', manual_marks_json TEXT NOT NULL DEFAULT '[]', submitted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         score DOUBLE PRECISION, feedback TEXT, review_mode TEXT NOT NULL DEFAULT 'manual', status TEXT NOT NULL DEFAULT 'submitted',
         UNIQUE(test_id, student_id))""",
+    """CREATE TABLE IF NOT EXISTS auth_sessions (
+        token TEXT PRIMARY KEY, role TEXT NOT NULL CHECK(role IN ('admin', 'faculty', 'student')),
+        account_id INTEGER NOT NULL, email TEXT NOT NULL, expires_at TIMESTAMPTZ NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)""",
     """CREATE TABLE IF NOT EXISTS results (
         id SERIAL PRIMARY KEY, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
         subject TEXT NOT NULL, semester INTEGER NOT NULL, marks DOUBLE PRECISION NOT NULL,
@@ -78,6 +81,8 @@ def init_db():
         for statement in SCHEMA:
             conn.execute(statement)
         conn.execute('ALTER TABLE faculty ADD COLUMN IF NOT EXISTS faculty_code_hash TEXT')
+        conn.execute('ALTER TABLE faculty ADD COLUMN IF NOT EXISTS password_hash TEXT')
+        conn.execute('ALTER TABLE students ADD COLUMN IF NOT EXISTS password_hash TEXT')
         conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS file_name TEXT')
         conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS file_path TEXT')
         conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS content_type TEXT')
@@ -85,10 +90,6 @@ def init_db():
         conn.execute("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS annotations_json TEXT NOT NULL DEFAULT '[]'")
         conn.execute("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS manual_marks_json TEXT NOT NULL DEFAULT '[]'")
         conn.execute("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS review_mode TEXT NOT NULL DEFAULT 'manual'")
-        conn.execute(
-            'UPDATE faculty SET faculty_code_hash=%s WHERE faculty_code_hash IS NULL',
-            [hashlib.sha256(b'2124').hexdigest()],
-        )
 
 
 def query(sql: str, params: Iterable[Any] = ()) -> list[dict[str, Any]]:
@@ -98,7 +99,7 @@ def query(sql: str, params: Iterable[Any] = ()) -> list[dict[str, Any]]:
 
 def execute(sql: str, params: Iterable[Any] = ()) -> dict[str, Any]:
     with connection() as conn:
-        if sql.lstrip().upper().startswith('INSERT'):
+        if sql.lstrip().upper().startswith('INSERT') and 'AUTH_SESSIONS' not in sql.upper():
             row = conn.execute(_postgres_sql(sql) + ' RETURNING id', tuple(params)).fetchone()
             return {'id': row['id'], 'affected': 1}
         cursor = conn.execute(_postgres_sql(sql), tuple(params))

@@ -4,6 +4,15 @@
 .sidebar-footer .sidebar-action:hover { transform: translateX(2px); background: rgba(255,255,255,.1); border-color: rgba(198,166,100,.45); color: #fff; }
 .sidebar-footer .logout-action { background: rgba(255,255,255,.06); cursor: pointer; }
 .sidebar-footer .logout-action:hover { background: rgba(197,57,41,.2); border-color: rgba(255,190,180,.4); color: #fff; }
+.student-only { display: none; }
+.student-only.view { display: none !important; }
+.student-only.view.active-view { display: block !important; }
+.student-nav { display: none; }
+.student-upload-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+.student-upload-form { display: grid; gap: 12px; }
+.student-upload-form label { display: grid; gap: 6px; color: var(--ink-soft); font-size: 12px; font-weight: 700; }
+.student-upload-form select, .student-upload-form input[type=file] { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); padding: 10px 12px; font: inherit; }
+@media (max-width: 760px) { .student-upload-grid { grid-template-columns: 1fr; } }
 .loading-state { color: var(--muted); }
 .loading-state i, .error-state i { margin-right: 8px; }
 .error-state { color: var(--danger); }

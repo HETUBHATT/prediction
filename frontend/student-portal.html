@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -202,7 +202,7 @@
     /* STAT GRID */
     .stat-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: .75rem;
       margin-bottom: 1rem
     }
@@ -530,45 +530,6 @@
       color: var(--sage-primary)
     }
 
-    .toast-stack {
-      position: fixed;
-      top: 7.25rem;
-      right: 1rem;
-      z-index: 110;
-      display: grid;
-      gap: .75rem;
-      width: min(380px, calc(100vw - 2rem));
-      max-height: calc(100vh - 8.25rem);
-      overflow-y: auto
-    }
-
-    .notification-toast {
-      background: var(--card-white);
-      border: 1px solid var(--sage-primary);
-      border-left: 4px solid var(--sage-primary);
-      border-radius: 10px;
-      box-shadow: 0 12px 30px rgba(27, 45, 36, .2);
-      padding: 1rem
-    }
-
-    .notification-toast h3 {
-      margin: 0 0 .35rem;
-      font-size: .95rem;
-      color: var(--sage-dark)
-    }
-
-    .notification-toast p {
-      margin: 0 0 .75rem;
-      font-size: .82rem;
-      color: var(--text-muted);
-      line-height: 1.45
-    }
-
-    .notification-toast button {
-      width: 100%;
-      justify-content: center
-    }
-
     /* FORM */
     .form-group {
       display: flex;
@@ -702,9 +663,19 @@
       font-size: .88rem
     }
 
+    @media(max-width:800px) {
+      .stat-grid {
+        grid-template-columns: repeat(3, 1fr)
+      }
+    }
+
     @media(max-width:600px) {
       .stat-grid {
         grid-template-columns: repeat(2, 1fr)
+      }
+
+      #attendanceForm {
+        grid-template-columns: 1fr 1fr !important
       }
 
       .profile-grid {
@@ -713,13 +684,6 @@
 
       .main {
         padding: 1rem
-      }
-
-      .toast-stack {
-        top: 6.75rem;
-        right: .75rem;
-        width: calc(100vw - 1.5rem);
-        max-height: calc(100vh - 7.5rem)
       }
     }
   </style>
@@ -760,7 +724,6 @@
 
   <!-- PORTAL (shown after login) -->
   <div id="portalWrap" style="display:none;flex-direction:column;flex:1">
-    <div id="toastStack" class="toast-stack" aria-live="polite"></div>
     <nav class="topnav">
       <div class="nav-brand">
         <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -813,6 +776,14 @@
           <div class="stat-box">
             <div class="stat-label">Risk</div>
             <div id="statRisk">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Assignments</div>
+            <div class="stat-val" id="statAssignments">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Tests</div>
+            <div class="stat-val" id="statTests">—</div>
           </div>
         </div>
 
@@ -921,6 +892,17 @@
         </div>
         <div class="card">
           <div class="card-title"><i class="fa-solid fa-person-chalkboard"></i> Attendance by Subject</div>
+          <div id="attendanceAlert" class="alert-box"></div>
+          <form id="attendanceForm"
+            style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:.6rem;align-items:end;margin-bottom:1rem">
+            <div class="form-group" style="margin:0"><label>Subject</label><input class="form-control"
+                id="attendanceSubject" required placeholder="Subject"></div>
+            <div class="form-group" style="margin:0"><label>Classes Held</label><input class="form-control"
+                id="classesHeld" type="number" min="1" required></div>
+            <div class="form-group" style="margin:0"><label>Classes Attended</label><input class="form-control"
+                id="classesAttended" type="number" min="0" required></div>
+            <button class="btn-primary" type="submit"><i class="fa-solid fa-calendar-check"></i> Record</button>
+          </form>
           <div id="reportAttendance">
             <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i>Loading…</div>
           </div>
@@ -953,17 +935,6 @@
         </div>
 
         <div class="card">
-          <div class="card-title"><i class="fa-solid fa-clipboard-check"></i> Upload Assignment</div>
-          <div id="assignmentUploadAlert" class="alert-box"></div>
-          <div class="form-group"><label>Assignment</label><input type="number" id="uploadAssignmentId"
-              class="form-control" placeholder="Assignment ID" min="1"></div>
-          <div class="form-group"><label>Answer Paper (PDF / JPG / PNG)</label><input type="file"
-              id="assignmentUploadFile" accept=".pdf,.jpg,.jpeg,.png"></div>
-          <button class="btn-primary" id="assignmentUploadBtn" type="button"><i class="fa-solid fa-paper-plane"></i>
-            Submit Assignment</button>
-        </div>
-
-        <div class="card">
           <div class="card-title"><i class="fa-solid fa-list-check"></i> My Submissions</div>
           <div id="mySubmissions">
             <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i>Loading…</div>
@@ -978,7 +949,6 @@
     const API = 'http://127.0.0.1:4009';
     let authToken = null;
     let studentId = null;
-    let scheduledTests = [];
 
     // ── Theme ──────────────────────────────────────────────
     function applyTheme(t) {
@@ -1011,32 +981,6 @@
     }
 
     function authHeaders() { return { 'Authorization': 'Bearer ' + authToken, 'Content-Type': 'application/json' }; }
-    function escapeHtml(value) {
-      return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
-    }
-    function showNewTestNotifications(tests) {
-      const acknowledged = JSON.parse(localStorage.getItem(`ev_ack_tests_${studentId}`) || '[]');
-      const pending = tests.filter(test => !acknowledged.includes(test.id));
-      const stack = document.getElementById('toastStack');
-      stack.innerHTML = pending.map(test => `<div class="notification-toast" data-test-id="${test.id}">
-    <h3><i class="fa-solid fa-bell"></i> New test scheduled</h3>
-    <p><strong>${escapeHtml(test.title)}</strong> for ${escapeHtml(test.subject)}${test.scheduled_at ? ` on ${escapeHtml(test.scheduled_at)}` : ''}.</p>
-    <button class="btn-primary acknowledge-test" type="button">Acknowledge</button>
-  </div>`).join('');
-      stack.querySelectorAll('.acknowledge-test').forEach(button => button.addEventListener('click', () => {
-        const toast = button.closest('.notification-toast');
-        const ids = JSON.parse(localStorage.getItem(`ev_ack_tests_${studentId}`) || '[]');
-        ids.push(Number(toast.dataset.testId));
-        localStorage.setItem(`ev_ack_tests_${studentId}`, JSON.stringify([...new Set(ids)]));
-        toast.remove();
-      }));
-    }
-    function renderQuestionPaper(value) {
-      if (!value) return '—';
-      const paper = escapeHtml(value);
-      if (/^https?:\/\//i.test(String(value))) return `<a href="${paper}" target="_blank" rel="noopener">Open paper</a>`;
-      return `<details><summary>Open paper</summary><div style="white-space:pre-wrap;margin-top:.4rem">${paper}</div></details>`;
-    }
 
     // ── Show/hide gate ─────────────────────────────────────
     function showPortal(name) {
@@ -1117,6 +1061,8 @@
         document.getElementById('statAtt').textContent = att + '%';
         document.getElementById('statScore').textContent = avgScore + '%';
         document.getElementById('statPred').textContent = predScore + '%';
+        document.getElementById('statAssignments').textContent = d.counts ? `${d.counts.pending_assignments}/${d.counts.assignments}` : '—';
+        document.getElementById('statTests').textContent = d.counts ? d.counts.tests : '—';
         const riskEl = document.getElementById('statRisk');
         const rClass = risk === 'High' ? 'risk-high' : risk === 'Medium' ? 'risk-medium' : 'risk-low';
         riskEl.innerHTML = `<span class="risk-badge ${rClass}">${risk}</span>`;
@@ -1132,41 +1078,29 @@
 
         // Recent tests
         const tests = d.tests || [];
-        scheduledTests = tests;
-        showNewTestNotifications(tests);
         const rtEl = document.getElementById('recentTests');
         if (tests.length) {
-          rtEl.innerHTML = `<table class="data-table"><thead><tr><th>Subject</th><th>Title</th><th>Test paper</th><th>Status</th><th>Score</th><th>Submit</th></tr></thead><tbody>
+          rtEl.innerHTML = `<table class="data-table"><thead><tr><th>Subject</th><th>Title</th><th>Status</th><th>Score</th></tr></thead><tbody>
         ${tests.slice(0, 5).map(t => `<tr>
-          <td>${escapeHtml(t.subject)}</td><td>${escapeHtml(t.title)}</td>
-          <td>${renderQuestionPaper(t.question_paper)}</td>
+          <td>${t.subject}</td><td>${t.title}</td>
           <td><span class="badge ${t.status === 'corrected' ? 'badge-green' : t.status === 'submitted' ? 'badge-yellow' : 'badge-gray'}">${t.status || 'open'}</span></td>
           <td>${t.score != null ? t.score : '—'}</td><td>${t.status ? 'Submitted' : `<button class="btn-primary test-submit-btn" data-test-id="${t.id}" type="button">Upload</button>`}</td>
         </tr>`).join('')}
       </tbody></table>`;
-          rtEl.querySelectorAll('.test-submit-btn').forEach(button => button.addEventListener('click', () => {
-            document.getElementById('uploadTestId').value = button.dataset.testId;
-            document.querySelector('[data-tab="upload"]').click();
-            document.getElementById('uploadFile').click();
-          }));
         } else { rtEl.innerHTML = '<div class="empty-state"><i class="fa-solid fa-flask"></i>No tests yet</div>'; }
 
         // Assignments
         const asgn = d.assignments || [];
         const aEl = document.getElementById('assignmentsTable');
         if (asgn.length) {
-          aEl.innerHTML = `<table class="data-table"><thead><tr><th>Subject</th><th>Title</th><th>Due</th><th>Status</th><th>Score</th></tr></thead><tbody>
+          aEl.innerHTML = `<table class="data-table"><thead><tr><th>Subject</th><th>Title</th><th>Due</th><th>Status</th><th>Score / Submit</th></tr></thead><tbody>
         ${asgn.map(a => `<tr>
           <td>${escapeHtml(a.subject)}</td><td>${escapeHtml(a.title)}</td><td>${a.due_date || '—'}</td>
           <td><span class="badge ${a.status === 'graded' ? 'badge-green' : a.status === 'submitted' ? 'badge-yellow' : 'badge-red'}">${a.status}</span></td>
-          <td>${a.score != null ? a.score : '—'}${a.status !== 'graded' ? ` <button class="btn-primary assignment-submit-btn" data-assignment-id="${a.id}" type="button">Upload</button>` : ''}</td>
+              <td>${a.score != null ? a.score : a.status === 'pending' ? `<input type="file" class="assignment-file" data-assignment-id="${a.id}" accept=".pdf,.jpg,.jpeg,.png" style="max-width:135px;font-size:.7rem"><button class="btn-primary assignment-submit" data-assignment-id="${a.id}" style="padding:.35rem .55rem;font-size:.7rem"><i class="fa-solid fa-upload"></i></button>` : '—'}</td>
         </tr>`).join('')}
       </tbody></table>`;
-          aEl.querySelectorAll('.assignment-submit-btn').forEach(button => button.addEventListener('click', () => {
-            document.getElementById('uploadAssignmentId').value = button.dataset.assignmentId;
-            document.querySelector('[data-tab="upload"]').click();
-            document.getElementById('assignmentUploadFile').click();
-          }));
+          aEl.querySelectorAll('.assignment-submit').forEach(button => button.addEventListener('click', () => submitAssignment(button.dataset.assignmentId, button)));
         } else { aEl.innerHTML = '<div class="empty-state"><i class="fa-solid fa-clipboard-list"></i>No assignments</div>'; }
 
         // Profile
@@ -1181,6 +1115,26 @@
         ].map(([l, v]) => `<div class="profile-field"><label>${l}</label><p>${v}</p></div>`).join('');
 
       } catch (e) { console.error(e); }
+    }
+
+    async function submitAssignment(assignmentId, button) {
+      const fileInput = document.querySelector(`.assignment-file[data-assignment-id="${assignmentId}"]`);
+      if (!fileInput.files[0]) { showDashAlert('Choose an assignment file first.', 'error'); return; }
+      button.disabled = true;
+      const form = new FormData(); form.append('assignment_id', assignmentId); form.append('file', fileInput.files[0]);
+      try {
+        const res = await fetch(`${API}/student/me/submit-assignment`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + authToken }, body: form });
+        const data = await res.json();
+        if (!res.ok) { showDashAlert(data.detail || 'Assignment submission failed.', 'error'); return; }
+        showDashAlert('Assignment submitted successfully.', 'success');
+        loadDashboard();
+      } catch { showDashAlert('Network error.', 'error'); }
+      finally { button.disabled = false; }
+    }
+
+    function showDashAlert(msg, type) {
+      const b = document.getElementById('dashAlert');
+      b.textContent = msg; b.className = `alert-box alert-${type}`; b.style.display = 'block';
     }
 
     // ── Report ─────────────────────────────────────────────
@@ -1228,6 +1182,29 @@
 
       } catch (e) { console.error(e); }
     }
+
+    document.getElementById('attendanceForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const alert = document.getElementById('attendanceAlert');
+      const payload = {
+        student_id: studentId,
+        subject: document.getElementById('attendanceSubject').value.trim(),
+        classes_held: Number(document.getElementById('classesHeld').value),
+        classes_attended: Number(document.getElementById('classesAttended').value),
+        date: new Date().toISOString().slice(0, 10)
+      };
+      if (payload.classes_attended > payload.classes_held) {
+        alert.textContent = 'Classes attended cannot exceed classes held.';
+        alert.className = 'alert-box alert-error'; alert.style.display = 'block'; return;
+      }
+      try {
+        const res = await fetch(`${API}/student/me/attendance`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(payload) });
+        const data = await res.json();
+        alert.textContent = res.ok ? 'Attendance recorded successfully.' : (data.detail || 'Could not record attendance.');
+        alert.className = `alert-box alert-${res.ok ? 'success' : 'error'}`; alert.style.display = 'block';
+        if (res.ok) { event.target.reset(); loadDashboard(); loadReport(); }
+      } catch { alert.textContent = 'Network error.'; alert.className = 'alert-box alert-error'; alert.style.display = 'block'; }
+    });
 
     // ── Upload ─────────────────────────────────────────────
     const uploadZone = document.getElementById('uploadZone');
@@ -1279,46 +1256,6 @@
         }
       } catch { showUploadAlert('Network error.', 'error'); }
       finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Paper'; }
-    });
-
-    document.getElementById('assignmentUploadBtn').addEventListener('click', async () => {
-      const assignmentId = document.getElementById('uploadAssignmentId').value;
-      const file = document.getElementById('assignmentUploadFile').files[0];
-      const alert = document.getElementById('assignmentUploadAlert');
-      if (!assignmentId || !file) { alert.textContent = !assignmentId ? 'Enter an Assignment ID.' : 'Select a file to upload.'; alert.className = 'alert-box alert-error'; alert.style.display = 'block'; return; }
-      const form = new FormData(); form.append('assignment_id', assignmentId); form.append('file', file);
-      try {
-        const res = await fetch(`${API}/student/me/submit-assignment`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + authToken }, body: form });
-        const data = await res.json();
-        alert.textContent = res.ok ? 'Assignment submitted successfully!' : (data.detail || 'Upload failed.');
-        alert.className = `alert-box ${res.ok ? 'alert-success' : 'alert-error'}`; alert.style.display = 'block';
-        if (res.ok) { document.getElementById('assignmentUploadFile').value = ''; loadDashboard(); }
-      } catch { alert.textContent = 'Network error.'; alert.className = 'alert-box alert-error'; alert.style.display = 'block'; }
-    });
-
-    const dashUploadZone = document.getElementById('dashUploadZone');
-    const dashUploadFile = document.getElementById('dashUploadFile');
-    dashUploadZone.addEventListener('click', () => dashUploadFile.click());
-    dashUploadFile.addEventListener('change', () => {
-      document.getElementById('dashUploadFileName').textContent = dashUploadFile.files[0]?.name || 'Click or drag file here';
-    });
-    document.getElementById('dashUploadBtn').addEventListener('click', () => {
-      const testId = document.getElementById('dashTestId').value;
-      const file = dashUploadFile.files[0];
-      if (!testId || !file) {
-        const alert = document.getElementById('dashUploadAlert');
-        alert.textContent = !testId ? 'Enter a Test ID.' : 'Select a file to upload.';
-        alert.className = 'alert-box alert-error';
-        alert.style.display = 'block';
-        return;
-      }
-      document.getElementById('uploadTestId').value = testId;
-      const transfer = new DataTransfer();
-      transfer.items.add(file);
-      uploadFile.files = transfer.files;
-      updateFileName();
-      document.querySelector('[data-tab="upload"]').click();
-      document.getElementById('uploadBtn').click();
     });
 
     async function loadSubmissions() {

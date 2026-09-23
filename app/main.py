@@ -5,7 +5,6 @@ import hmac
 import json
 import os
 import secrets
-import smtplib
 import socket
 import time
 from pathlib import Path
@@ -44,6 +43,7 @@ ALLOWED_FILES = {
 ADMIN_EMAILS = {email.strip().lower() for email in os.getenv('ADMIN_EMAILS', 'admin@eduvista.com').split(',') if email.strip()}
 SESSION_TTL_SECONDS = int(os.getenv('SESSION_TTL_SECONDS', str(8 * 60 * 60)))
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
+DEFAULT_STUDENT_PASSWORD = os.getenv('DEFAULT_STUDENT_PASSWORD')
 
 
 def generate_faculty_code() -> str:
@@ -74,6 +74,11 @@ def make_student_name_from_email(email: str) -> str:
 @app.on_event('startup')
 def startup():
     init_db()
+    if DEFAULT_STUDENT_PASSWORD:
+        execute(
+            'UPDATE students SET password_hash=? WHERE password_hash IS NULL',
+            [hash_password(DEFAULT_STUDENT_PASSWORD)],
+        )
 
 @app.get('/', include_in_schema=False)
 def home():
@@ -547,13 +552,41 @@ def student_me_dashboard(request: Request):
     student = one_or_404('SELECT id,name,email,department,semester,phone,attendance,created_at FROM students WHERE id=?', [sid], 'Student')
     attendance = query('SELECT subject,SUM(classes_held) classes_held,SUM(classes_attended) classes_attended,ROUND((SUM(classes_attended)*100.0/SUM(classes_held))::numeric,2) attendance_percentage FROM attendance WHERE student_id=? GROUP BY subject', [sid])
     results = query('SELECT * FROM results WHERE student_id=? ORDER BY semester,subject', [sid])
-    assignments = query('SELECT * FROM assignments WHERE student_id=? ORDER BY due_date DESC LIMIT 5', [sid])
-    tests = query('SELECT t.id,t.subject,t.title,t.total_marks,t.scheduled_at,s.score,s.status,s.submitted_at FROM tests t LEFT JOIN submissions s ON s.test_id=t.id AND s.student_id=? ORDER BY t.created_at DESC LIMIT 10', [sid])
+    assignments = query('SELECT * FROM assignments WHERE student_id=? ORDER BY due_date DESC', [sid])
+    tests = query('SELECT t.id,t.subject,t.title,t.total_marks,t.scheduled_at,t.question_paper,t.created_at,s.score,s.status,s.submitted_at FROM tests t LEFT JOIN submissions s ON s.test_id=t.id AND s.student_id=? ORDER BY t.created_at DESC', [sid])
     try:
         prediction = predict_student_risk(sid)
     except HTTPException:
         prediction = None
     return {'student': student, 'attendance': attendance, 'results': results, 'assignments': assignments, 'tests': tests, 'prediction': prediction}
+
+@app.get('/student/me/submissions', tags=['Student Portal'])
+def student_me_submissions(request: Request):
+    user = require_roles(request, 'student')
+    return query(
+        'SELECT s.id,s.test_id,t.subject,t.title,t.total_marks,s.file_name,s.content_type,s.file_size,s.submitted_at,s.score,s.feedback,s.status '
+        'FROM submissions s JOIN tests t ON t.id=s.test_id WHERE s.student_id=? ORDER BY s.submitted_at DESC',
+        [user['account_id']],
+    )
+
+@app.post('/student/me/submit-assignment', tags=['Student Portal'])
+async def student_submit_assignment(request: Request, assignment_id: int = Form(...), file: UploadFile = File(...)):
+    user = require_roles(request, 'student')
+    assignment = one_or_404('SELECT id FROM assignments WHERE id=? AND student_id=?', [assignment_id, user['account_id']], 'Assignment')
+    suffix = Path(file.filename or '').suffix.lower()
+    if suffix not in ALLOWED_FILES or file.content_type != ALLOWED_FILES[suffix]:
+        raise HTTPException(415, 'Submission must be a PDF, JPG, JPEG, or PNG file')
+    contents = await file.read(MAX_SUBMISSION_SIZE + 1)
+    if len(contents) > MAX_SUBMISSION_SIZE:
+        raise HTTPException(413, 'Submission file must be 10 MB or smaller')
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    stored_path = UPLOAD_DIR / f'{uuid4().hex}{suffix}'
+    stored_path.write_bytes(contents)
+    execute(
+        'UPDATE assignments SET submission_file_name=?,submission_file_path=?,submission_content_type=?,submission_file_size=?,submitted_at=CURRENT_TIMESTAMP,status=? WHERE id=?',
+        [file.filename, str(stored_path), file.content_type, len(contents), 'submitted', assignment['id']],
+    )
+    return one_or_404('SELECT * FROM assignments WHERE id=?', [assignment['id']], 'Assignment')
 
 @app.get('/student/me/report', tags=['Student Portal'])
 def student_me_report(request: Request):

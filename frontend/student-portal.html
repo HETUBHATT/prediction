@@ -100,6 +100,11 @@
     .upload-zone i{font-size:2rem;color:var(--text-muted);margin-bottom:.5rem}
     .upload-zone p{font-size:.84rem;color:var(--text-muted)}
     .upload-zone strong{color:var(--sage-primary)}
+    .toast-stack{position:fixed;top:7.25rem;right:1rem;z-index:110;display:grid;gap:.75rem;width:min(380px,calc(100vw - 2rem));max-height:calc(100vh - 8.25rem);overflow-y:auto}
+    .notification-toast{background:var(--card-white);border:1px solid var(--sage-primary);border-left:4px solid var(--sage-primary);border-radius:10px;box-shadow:0 12px 30px rgba(27,45,36,.2);padding:1rem}
+    .notification-toast h3{margin:0 0 .35rem;font-size:.95rem;color:var(--sage-dark)}
+    .notification-toast p{margin:0 0 .75rem;font-size:.82rem;color:var(--text-muted);line-height:1.45}
+    .notification-toast button{width:100%;justify-content:center}
     /* FORM */
     .form-group{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.9rem}
     .form-group label{font-size:.75rem;font-weight:700;color:var(--sage-dark);text-transform:uppercase;letter-spacing:.4px}
@@ -120,7 +125,7 @@
     .input-wrapper i.input-icon{position:absolute;left:.9rem;color:var(--text-muted);font-size:.88rem;pointer-events:none}
     .input-wrapper .form-control{padding-left:2.4rem}
     .toggle-password{position:absolute;right:.9rem;color:var(--text-muted);cursor:pointer;font-size:.88rem}
-    @media(max-width:600px){.stat-grid{grid-template-columns:repeat(2,1fr)}.profile-grid{grid-template-columns:1fr}.main{padding:1rem}}
+    @media(max-width:600px){.stat-grid{grid-template-columns:repeat(2,1fr)}.profile-grid{grid-template-columns:1fr}.main{padding:1rem}.toast-stack{top:6.75rem;right:.75rem;width:calc(100vw - 1.5rem);max-height:calc(100vh - 7.5rem)}}
   </style>
 </head>
 <body>
@@ -158,6 +163,7 @@
 
 <!-- PORTAL (shown after login) -->
 <div id="portalWrap" style="display:none;flex-direction:column;flex:1">
+  <div id="toastStack" class="toast-stack" aria-live="polite"></div>
   <nav class="topnav">
     <div class="nav-brand">
       <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -314,6 +320,14 @@
       </div>
 
       <div class="card">
+        <div class="card-title"><i class="fa-solid fa-clipboard-check"></i> Upload Assignment</div>
+        <div id="assignmentUploadAlert" class="alert-box"></div>
+        <div class="form-group"><label>Assignment</label><input type="number" id="uploadAssignmentId" class="form-control" placeholder="Assignment ID" min="1"></div>
+        <div class="form-group"><label>Answer Paper (PDF / JPG / PNG)</label><input type="file" id="assignmentUploadFile" accept=".pdf,.jpg,.jpeg,.png"></div>
+        <button class="btn-primary" id="assignmentUploadBtn" type="button"><i class="fa-solid fa-paper-plane"></i> Submit Assignment</button>
+      </div>
+
+      <div class="card">
         <div class="card-title"><i class="fa-solid fa-list-check"></i> My Submissions</div>
         <div id="mySubmissions"><div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i>Loading…</div></div>
       </div>
@@ -326,6 +340,7 @@
 const API = 'http://127.0.0.1:4009';
 let authToken = null;
 let studentId = null;
+let scheduledTests = [];
 
 // ── Theme ──────────────────────────────────────────────
 function applyTheme(t) {
@@ -358,6 +373,32 @@ function clearSession() {
 }
 
 function authHeaders() { return { 'Authorization': 'Bearer ' + authToken, 'Content-Type': 'application/json' }; }
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+}
+function showNewTestNotifications(tests) {
+  const acknowledged = JSON.parse(localStorage.getItem(`ev_ack_tests_${studentId}`) || '[]');
+  const pending = tests.filter(test => !acknowledged.includes(test.id));
+  const stack = document.getElementById('toastStack');
+  stack.innerHTML = pending.map(test => `<div class="notification-toast" data-test-id="${test.id}">
+    <h3><i class="fa-solid fa-bell"></i> New test scheduled</h3>
+    <p><strong>${escapeHtml(test.title)}</strong> for ${escapeHtml(test.subject)}${test.scheduled_at ? ` on ${escapeHtml(test.scheduled_at)}` : ''}.</p>
+    <button class="btn-primary acknowledge-test" type="button">Acknowledge</button>
+  </div>`).join('');
+  stack.querySelectorAll('.acknowledge-test').forEach(button => button.addEventListener('click', () => {
+    const toast = button.closest('.notification-toast');
+    const ids = JSON.parse(localStorage.getItem(`ev_ack_tests_${studentId}`) || '[]');
+    ids.push(Number(toast.dataset.testId));
+    localStorage.setItem(`ev_ack_tests_${studentId}`, JSON.stringify([...new Set(ids)]));
+    toast.remove();
+  }));
+}
+function renderQuestionPaper(value) {
+  if (!value) return '—';
+  const paper = escapeHtml(value);
+  if (/^https?:\/\//i.test(String(value))) return `<a href="${paper}" target="_blank" rel="noopener">Open paper</a>`;
+  return `<details><summary>Open paper</summary><div style="white-space:pre-wrap;margin-top:.4rem">${paper}</div></details>`;
+}
 
 // ── Show/hide gate ─────────────────────────────────────
 function showPortal(name) {
@@ -453,15 +494,23 @@ async function loadDashboard() {
 
     // Recent tests
     const tests = d.tests || [];
+    scheduledTests = tests;
+    showNewTestNotifications(tests);
     const rtEl = document.getElementById('recentTests');
     if (tests.length) {
-      rtEl.innerHTML = `<table class="data-table"><thead><tr><th>Subject</th><th>Title</th><th>Status</th><th>Score</th></tr></thead><tbody>
+      rtEl.innerHTML = `<table class="data-table"><thead><tr><th>Subject</th><th>Title</th><th>Test paper</th><th>Status</th><th>Score</th><th>Submit</th></tr></thead><tbody>
         ${tests.slice(0,5).map(t => `<tr>
-          <td>${t.subject}</td><td>${t.title}</td>
+          <td>${escapeHtml(t.subject)}</td><td>${escapeHtml(t.title)}</td>
+          <td>${renderQuestionPaper(t.question_paper)}</td>
           <td><span class="badge ${t.status === 'corrected' ? 'badge-green' : t.status === 'submitted' ? 'badge-yellow' : 'badge-gray'}">${t.status || 'open'}</span></td>
-          <td>${t.score != null ? t.score : '—'}</td>
+          <td>${t.score != null ? t.score : '—'}</td><td>${t.status ? 'Submitted' : `<button class="btn-primary test-submit-btn" data-test-id="${t.id}" type="button">Upload</button>`}</td>
         </tr>`).join('')}
       </tbody></table>`;
+      rtEl.querySelectorAll('.test-submit-btn').forEach(button => button.addEventListener('click', () => {
+        document.getElementById('uploadTestId').value = button.dataset.testId;
+        document.querySelector('[data-tab="upload"]').click();
+        document.getElementById('uploadFile').click();
+      }));
     } else { rtEl.innerHTML = '<div class="empty-state"><i class="fa-solid fa-flask"></i>No tests yet</div>'; }
 
     // Assignments
@@ -470,11 +519,16 @@ async function loadDashboard() {
     if (asgn.length) {
       aEl.innerHTML = `<table class="data-table"><thead><tr><th>Subject</th><th>Title</th><th>Due</th><th>Status</th><th>Score</th></tr></thead><tbody>
         ${asgn.map(a => `<tr>
-          <td>${a.subject}</td><td>${a.title}</td><td>${a.due_date || '—'}</td>
+          <td>${escapeHtml(a.subject)}</td><td>${escapeHtml(a.title)}</td><td>${a.due_date || '—'}</td>
           <td><span class="badge ${a.status === 'graded' ? 'badge-green' : a.status === 'submitted' ? 'badge-yellow' : 'badge-red'}">${a.status}</span></td>
-          <td>${a.score != null ? a.score : '—'}</td>
+          <td>${a.score != null ? a.score : '—'}${a.status !== 'graded' ? ` <button class="btn-primary assignment-submit-btn" data-assignment-id="${a.id}" type="button">Upload</button>` : ''}</td>
         </tr>`).join('')}
       </tbody></table>`;
+      aEl.querySelectorAll('.assignment-submit-btn').forEach(button => button.addEventListener('click', () => {
+        document.getElementById('uploadAssignmentId').value = button.dataset.assignmentId;
+        document.querySelector('[data-tab="upload"]').click();
+        document.getElementById('assignmentUploadFile').click();
+      }));
     } else { aEl.innerHTML = '<div class="empty-state"><i class="fa-solid fa-clipboard-list"></i>No assignments</div>'; }
 
     // Profile
@@ -587,6 +641,46 @@ document.getElementById('uploadBtn').addEventListener('click', async () => {
     }
   } catch { showUploadAlert('Network error.', 'error'); }
   finally { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Paper'; }
+});
+
+document.getElementById('assignmentUploadBtn').addEventListener('click', async () => {
+  const assignmentId = document.getElementById('uploadAssignmentId').value;
+  const file = document.getElementById('assignmentUploadFile').files[0];
+  const alert = document.getElementById('assignmentUploadAlert');
+  if (!assignmentId || !file) { alert.textContent = !assignmentId ? 'Enter an Assignment ID.' : 'Select a file to upload.'; alert.className = 'alert-box alert-error'; alert.style.display = 'block'; return; }
+  const form = new FormData(); form.append('assignment_id', assignmentId); form.append('file', file);
+  try {
+    const res = await fetch(`${API}/student/me/submit-assignment`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + authToken }, body: form });
+    const data = await res.json();
+    alert.textContent = res.ok ? 'Assignment submitted successfully!' : (data.detail || 'Upload failed.');
+    alert.className = `alert-box ${res.ok ? 'alert-success' : 'alert-error'}`; alert.style.display = 'block';
+    if (res.ok) { document.getElementById('assignmentUploadFile').value = ''; loadDashboard(); }
+  } catch { alert.textContent = 'Network error.'; alert.className = 'alert-box alert-error'; alert.style.display = 'block'; }
+});
+
+const dashUploadZone = document.getElementById('dashUploadZone');
+const dashUploadFile = document.getElementById('dashUploadFile');
+dashUploadZone.addEventListener('click', () => dashUploadFile.click());
+dashUploadFile.addEventListener('change', () => {
+  document.getElementById('dashUploadFileName').textContent = dashUploadFile.files[0]?.name || 'Click or drag file here';
+});
+document.getElementById('dashUploadBtn').addEventListener('click', () => {
+  const testId = document.getElementById('dashTestId').value;
+  const file = dashUploadFile.files[0];
+  if (!testId || !file) {
+    const alert = document.getElementById('dashUploadAlert');
+    alert.textContent = !testId ? 'Enter a Test ID.' : 'Select a file to upload.';
+    alert.className = 'alert-box alert-error';
+    alert.style.display = 'block';
+    return;
+  }
+  document.getElementById('uploadTestId').value = testId;
+  const transfer = new DataTransfer();
+  transfer.items.add(file);
+  uploadFile.files = transfer.files;
+  updateFileName();
+  document.querySelector('[data-tab="upload"]').click();
+  document.getElementById('uploadBtn').click();
 });
 
 async function loadSubmissions() {

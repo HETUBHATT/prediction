@@ -30,17 +30,19 @@
                         class="fa-solid fa-user-graduate"></i><span>Students</span></button>
                 <button class="nav-item admin-only" data-view="faculty"><i
                         class="fa-solid fa-chalkboard-user"></i><span>Faculty</span></button>
-                <button class="nav-item admin-only" data-view="tests"><i class="fa-solid fa-file-pen"></i><span>Tests &
+                <button class="nav-item" data-view="tests"><i class="fa-solid fa-file-pen"></i><span>Tests &
                         submissions</span></button>
                 <button class="nav-item admin-only" data-view="attendance"><i
                         class="fa-solid fa-calendar-check"></i><span>Attendance</span></button>
-                <button class="nav-item admin-only" data-view="assignments"><i
+                <button class="nav-item" data-view="assignments"><i
                         class="fa-solid fa-list-check"></i><span>Assignments</span></button>
                 <button class="nav-item admin-only" data-view="results"><i
                         class="fa-solid fa-chart-line"></i><span>Results &
                         risk</span></button>
                 <button class="nav-item" data-view="reports"><i
                         class="fa-solid fa-file-export"></i><span>Reports</span></button>
+                <a class="nav-item student-only" href="/student/portal"><i
+                    class="fa-solid fa-upload"></i><span>Submit work</span></a>
             </nav>
             <div class="sidebar-footer"><a class="sidebar-action docs-action" href="/docs" target="_blank"
                     rel="noopener"><i class="fa-solid fa-code"></i><span>API docs</span></a><button
@@ -174,12 +176,12 @@
                     </article>
                 </div>
             </section>
-            <section id="view-faculty" class="view admin-only">
+            <section id="view-faculty" class="view">
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">Faculty management</p>
                         <h2>Faculty directory</h2>
-                    </div><button class="primary-button" data-open-form="facultyForm"><i class="fa-solid fa-plus"></i>
+                    </div><button class="primary-button admin-only" data-open-form="facultyForm"><i class="fa-solid fa-plus"></i>
                         Add faculty</button>
                 </div>
                 <div class="content-grid">
@@ -206,7 +208,7 @@
                             </table>
                         </div>
                     </article>
-                    <article class="panel form-panel" id="facultyForm">
+                    <article class="panel form-panel admin-only" id="facultyForm">
                         <div class="panel-heading">
                             <h3>Register faculty</h3>
                         </div>
@@ -227,12 +229,12 @@
                     </article>
                 </div>
             </section>
-            <section id="view-tests" class="view admin-only">
+            <section id="view-tests" class="view">
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">Assessment desk</p>
                         <h2>Tests & submissions</h2>
-                    </div><button class="primary-button" data-open-form="testForm"><i class="fa-solid fa-plus"></i>
+                    </div><button class="primary-button admin-only" data-open-form="testForm"><i class="fa-solid fa-plus"></i>
                         Schedule test</button>
                 </div>
                 <div class="content-grid">
@@ -245,7 +247,7 @@
                             <div class="empty-state">Loading tests...</div>
                         </div>
                     </article>
-                    <article class="panel form-panel" id="testForm">
+                    <article class="panel form-panel admin-only" id="testForm">
                         <div class="panel-heading">
                             <h3>Schedule an assessment</h3>
                         </div>
@@ -261,7 +263,7 @@
                         </form>
                     </article>
                 </div>
-                <article class="panel upload-panel">
+                <article class="panel upload-panel admin-only">
                     <div class="panel-heading">
                         <div>
                             <p class="eyebrow">Student workspace</p>
@@ -276,7 +278,7 @@
                                 required></label><button class="primary-button" type="submit">Upload submission</button>
                     </form>
                 </article>
-                <article class="panel review-panel">
+                <article class="panel review-panel admin-only">
                     <div class="panel-heading">
                         <div>
                             <p class="eyebrow">Faculty workspace</p>
@@ -369,7 +371,7 @@
                     </article>
                 </div>
             </section>
-            <section id="view-assignments" class="view admin-only">
+            <section id="view-assignments" class="view">
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">Assignment tracking</p>
@@ -377,7 +379,7 @@
                     </div>
                 </div>
                 <div class="content-grid">
-                    <article class="panel form-panel">
+                    <article class="panel form-panel admin-only">
                         <div class="panel-heading">
                             <h3>Create assignment</h3>
                         </div>
@@ -398,7 +400,7 @@
                         <div class="panel-heading">
                             <h3>Student assignments</h3>
                         </div>
-                        <form class="inline-form" data-lookup="assignments"><input name="student_id" type="number"
+                        <form class="inline-form admin-only" data-lookup="assignments"><input name="student_id" type="number"
                                 required placeholder="Student ID"><button class="secondary-button">View</button></form>
                         <div id="assignmentResults" class="stack-list"></div>
                     </article>
@@ -482,7 +484,7 @@
             <p id="loginError" class="form-error"></p>
         </div>
     </div>
-    <script src="/frontend/dashboard.js"></script>
+    <script src="/frontend/dashboard.js?v=20260923"></script>
 </body>
 
 </html>

@@ -1,0 +1,10 @@
+DATABASE_URL=postgresql://postgres:HETU2124@localhost:5432/prediction
+ADMIN_EMAILS=admin@eduvista.com
+ADMIN_PASSWORD=Welcome@123456
+DEFAULT_STUDENT_PASSWORD=Welcome@123456
+SESSION_TTL_SECONDS=28800
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=nmcbca2010@gmail.com
+SMTP_FROM=nmcbca2010@gmail.com
+SMTP_PASSWORD=aoqaqnpztnkvoeey

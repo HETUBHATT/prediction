@@ -271,6 +271,7 @@
                             <table>
                                 <thead>
                                     <tr>
+                                        <th>ID</th>
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Department</th>
@@ -281,7 +282,7 @@
                                 </thead>
                                 <tbody id="studentsTable">
                                     <tr>
-                                        <td colspan="6" class="empty-state">Loading students...</td>
+                                        <td colspan="7" class="empty-state">Loading students...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -327,6 +328,7 @@
                             <table>
                                 <thead>
                                     <tr>
+                                        <th>ID</th>
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Department</th>
@@ -335,7 +337,7 @@
                                 </thead>
                                 <tbody id="facultyTable">
                                     <tr>
-                                        <td colspan="4" class="empty-state">Loading faculty...</td>
+                                        <td colspan="5" class="empty-state">Loading faculty...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -367,7 +369,7 @@
                     <div>
                         <p class="eyebrow">Assessment desk</p>
                         <h2>Tests & submissions</h2>
-                    </div><button class="primary-button admin-only" data-open-form="testForm"><i
+                    </div><button class="primary-button test-scheduler" data-open-form="testForm"><i
                             class="fa-solid fa-plus"></i>
                         Schedule test</button>
                 </div>
@@ -381,23 +383,25 @@
                             <div class="empty-state">Loading tests...</div>
                         </div>
                     </article>
-                    <article class="panel form-panel admin-only" id="testForm">
+                    <article class="panel form-panel test-scheduler" id="testForm">
                         <div class="panel-heading">
                             <h3>Schedule an assessment</h3>
                         </div>
                         <form data-api-form="test">
-                            <div class="field-grid"><label>Faculty ID<input name="faculty_id" type="number"
+                            <div class="field-grid"><label class="admin-only">Faculty ID<input name="faculty_id" type="number"
                                         placeholder="Optional"></label><label>Subject<input name="subject" required
                                         placeholder="Mathematics"></label><label class="wide">Title<input name="title"
                                         required placeholder="Mid-term assessment"></label><label>Total marks<input
                                         name="total_marks" type="number" min="1" required
                                         value="100"></label><label>Scheduled at<input name="scheduled_at"
-                                        type="datetime-local"></label></div><button class="primary-button"
+                                        type="datetime-local"></label><label class="wide file-picker"><i
+                                        class="fa-solid fa-file-arrow-up"></i><span>Choose question paper</span><input
+                                        name="question_paper_file" type="file" accept=".pdf,.jpg,.jpeg,.png"></label></div><button class="primary-button"
                                 type="submit">Schedule test</button>
                         </form>
                     </article>
                 </div>
-                <article class="panel upload-panel admin-only">
+                <article class="panel upload-panel student-only">
                     <div class="panel-heading">
                         <div>
                             <p class="eyebrow">Student workspace</p>
@@ -405,14 +409,13 @@
                         </div><span class="file-note">PDF, JPG, JPEG, PNG · max 10 MB</span>
                     </div>
                     <form data-api-form="submission" class="upload-form"><label>Test ID<input name="test_id"
-                                type="number" required placeholder="Test ID"></label><label>Student ID<input
-                                name="student_id" type="number" required placeholder="Student ID"></label><label
+                                type="number" required placeholder="Test ID"></label><label
                             class="file-picker"><i class="fa-solid fa-paperclip"></i><span>Choose answer
                                 file</span><input name="file" type="file" accept=".pdf,.jpg,.jpeg,.png"
                                 required></label><button class="primary-button" type="submit">Upload submission</button>
                     </form>
                 </article>
-                <article class="panel review-panel admin-only">
+                <article class="panel review-panel faculty-review">
                     <div class="panel-heading">
                         <div>
                             <p class="eyebrow">Faculty workspace</p>
@@ -526,7 +529,7 @@
                                         <option>submitted</option>
                                         <option>graded</option>
                                     </select></label><label>Score<input name="score" type="number" min="0"
-                                        max="100"></label></div><button class="primary-button" type="submit">Save
+                                        max="100"></label><label class="wide file-picker"><i class="fa-solid fa-file-arrow-up"></i><span>Choose assignment definition</span><input name="definition_file" type="file" accept=".pdf,.jpg,.jpeg,.png"></label></div><button class="primary-button" type="submit">Save
                                 assignment</button>
                         </form>
                     </article>
@@ -538,6 +541,10 @@
                                 type="number" required placeholder="Student ID"><button
                                 class="secondary-button">View</button></form>
                         <div id="assignmentResults" class="stack-list"></div>
+                    </article>
+                    <article class="panel faculty-assignment-list">
+                        <div class="panel-heading"><h3>Assigned work</h3><button class="icon-button small" data-refresh="assignments" type="button"><i class="fa-solid fa-rotate"></i></button></div>
+                        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Student</th><th>Assignment</th><th>Status</th><th>Definition</th><th>Save</th></tr></thead><tbody id="assignmentsTable"><tr><td colspan="6" class="empty-state">Loading assignments...</td></tr></tbody></table></div>
                     </article>
                 </div>
             </section>
@@ -619,11 +626,7 @@
             <p id="loginError" class="form-error"></p>
         </div>
     </div>
-<<<<<<< HEAD
-    <script src="/frontend/dashboard.js?v=20260923"></script>
-=======
-    <script src="/frontend/dashboard.js?v=login-fallback-1"></script>
->>>>>>> 946595c5073d4fd28b743cdea7820060abe0cfd2
+    <script src="/frontend/dashboard.js?v=20260923-5"></script>
 </body>
 
 </html>

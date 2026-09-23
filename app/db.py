@@ -7,13 +7,14 @@ from typing import Any, Iterable
 import psycopg
 from psycopg.rows import dict_row
 
-ENV_FILE = Path(__file__).resolve().parent.parent / '.env'
-if ENV_FILE.is_file():
-    for line in ENV_FILE.read_text(encoding='utf-8').splitlines():
-        line = line.strip()
-        if line and not line.startswith('#') and '=' in line:
-            name, value = line.split('=', 1)
-            os.environ.setdefault(name.strip(), value.strip().strip('"').strip("'"))
+BASE_DIR = Path(__file__).resolve().parent.parent
+for env_file in (BASE_DIR / '.env', BASE_DIR / 'env'):
+    if env_file.is_file():
+        for line in env_file.read_text(encoding='utf-8').splitlines():
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                name, value = line.split('=', 1)
+                os.environ.setdefault(name.strip(), value.strip().strip('"').strip("'"))
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 if not DATABASE_URL:
@@ -44,10 +45,14 @@ SCHEMA = (
         subject TEXT NOT NULL, title TEXT NOT NULL, due_date TEXT, status TEXT NOT NULL DEFAULT 'pending',
         score DOUBLE PRECISION, submission_file_name TEXT, submission_file_path TEXT,
         submission_content_type TEXT, submission_file_size INTEGER, submitted_at TIMESTAMPTZ,
+        definition_file_name TEXT, definition_file_path TEXT, definition_content_type TEXT,
+        definition_file_size INTEGER,
         UNIQUE(student_id, subject, title))""",
     """CREATE TABLE IF NOT EXISTS tests (
         id SERIAL PRIMARY KEY, faculty_id INTEGER REFERENCES faculty(id), subject TEXT NOT NULL,
         title TEXT NOT NULL, total_marks DOUBLE PRECISION NOT NULL, scheduled_at TEXT, question_paper TEXT,
+        question_paper_file_name TEXT, question_paper_file_path TEXT, question_paper_content_type TEXT,
+        question_paper_file_size INTEGER,
         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)""",
     """CREATE TABLE IF NOT EXISTS submissions (
         id SERIAL PRIMARY KEY, test_id INTEGER NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
@@ -89,6 +94,14 @@ def init_db():
         conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS file_path TEXT')
         conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS content_type TEXT')
         conn.execute('ALTER TABLE submissions ADD COLUMN IF NOT EXISTS file_size INTEGER')
+        conn.execute('ALTER TABLE tests ADD COLUMN IF NOT EXISTS question_paper_file_name TEXT')
+        conn.execute('ALTER TABLE tests ADD COLUMN IF NOT EXISTS question_paper_file_path TEXT')
+        conn.execute('ALTER TABLE tests ADD COLUMN IF NOT EXISTS question_paper_content_type TEXT')
+        conn.execute('ALTER TABLE tests ADD COLUMN IF NOT EXISTS question_paper_file_size INTEGER')
+        conn.execute('ALTER TABLE assignments ADD COLUMN IF NOT EXISTS definition_file_name TEXT')
+        conn.execute('ALTER TABLE assignments ADD COLUMN IF NOT EXISTS definition_file_path TEXT')
+        conn.execute('ALTER TABLE assignments ADD COLUMN IF NOT EXISTS definition_content_type TEXT')
+        conn.execute('ALTER TABLE assignments ADD COLUMN IF NOT EXISTS definition_file_size INTEGER')
         conn.execute("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS annotations_json TEXT NOT NULL DEFAULT '[]'")
         conn.execute("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS manual_marks_json TEXT NOT NULL DEFAULT '[]'")
         conn.execute("ALTER TABLE submissions ADD COLUMN IF NOT EXISTS review_mode TEXT NOT NULL DEFAULT 'manual'")

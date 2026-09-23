@@ -1080,27 +1080,30 @@
         const tests = d.tests || [];
         const rtEl = document.getElementById('recentTests');
         if (tests.length) {
-          rtEl.innerHTML = `<table class="data-table"><thead><tr><th>Subject</th><th>Title</th><th>Status</th><th>Score</th></tr></thead><tbody>
+          rtEl.innerHTML = `<table class="data-table"><thead><tr><th>Subject</th><th>Title</th><th>Question paper</th><th>Status</th><th>Score</th></tr></thead><tbody>
         ${tests.slice(0, 5).map(t => `<tr>
           <td>${t.subject}</td><td>${t.title}</td>
+          <td>${t.question_paper_file_name ? `<button class="btn-primary question-paper-btn" data-test-id="${t.id}" type="button">Open</button>` : 'Not uploaded'}</td>
           <td><span class="badge ${t.status === 'corrected' ? 'badge-green' : t.status === 'submitted' ? 'badge-yellow' : 'badge-gray'}">${t.status || 'open'}</span></td>
-          <td>${t.score != null ? t.score : '—'}</td><td>${t.status ? 'Submitted' : `<button class="btn-primary test-submit-btn" data-test-id="${t.id}" type="button">Upload</button>`}</td>
+          <td>${t.score != null ? t.score : '—'}</td>
         </tr>`).join('')}
-      </tbody></table>`;
+        </tbody></table>`;
+          rtEl.querySelectorAll('.question-paper-btn').forEach(button => button.addEventListener('click', () => openQuestionPaper(button.dataset.testId)));
         } else { rtEl.innerHTML = '<div class="empty-state"><i class="fa-solid fa-flask"></i>No tests yet</div>'; }
 
         // Assignments
         const asgn = d.assignments || [];
         const aEl = document.getElementById('assignmentsTable');
         if (asgn.length) {
-          aEl.innerHTML = `<table class="data-table"><thead><tr><th>Subject</th><th>Title</th><th>Due</th><th>Status</th><th>Score / Submit</th></tr></thead><tbody>
+          aEl.innerHTML = `<table class="data-table"><thead><tr><th>Subject</th><th>Title</th><th>Due</th><th>Definition</th><th>Status</th><th>Score / Submit</th></tr></thead><tbody>
         ${asgn.map(a => `<tr>
           <td>${escapeHtml(a.subject)}</td><td>${escapeHtml(a.title)}</td><td>${a.due_date || '—'}</td>
+          <td>${a.definition_file_name ? `<button class="btn-primary assignment-definition-btn" data-assignment-id="${a.id}" type="button">Open</button>` : 'Not shared'}</td>
           <td><span class="badge ${a.status === 'graded' ? 'badge-green' : a.status === 'submitted' ? 'badge-yellow' : 'badge-red'}">${a.status}</span></td>
               <td>${a.score != null ? a.score : a.status === 'pending' ? `<input type="file" class="assignment-file" data-assignment-id="${a.id}" accept=".pdf,.jpg,.jpeg,.png" style="max-width:135px;font-size:.7rem"><button class="btn-primary assignment-submit" data-assignment-id="${a.id}" style="padding:.35rem .55rem;font-size:.7rem"><i class="fa-solid fa-upload"></i></button>` : '—'}</td>
         </tr>`).join('')}
       </tbody></table>`;
-          aEl.querySelectorAll('.assignment-submit').forEach(button => button.addEventListener('click', () => submitAssignment(button.dataset.assignmentId, button)));
+          aEl.querySelectorAll('.assignment-submit').forEach(button => button.addEventListener('click', () => submitAssignment(button.dataset.assignmentId, button))); aEl.querySelectorAll('.assignment-definition-btn').forEach(button => button.addEventListener('click', () => openAssignmentDefinition(button.dataset.assignmentId)));
         } else { aEl.innerHTML = '<div class="empty-state"><i class="fa-solid fa-clipboard-list"></i>No assignments</div>'; }
 
         // Profile
@@ -1115,6 +1118,20 @@
         ].map(([l, v]) => `<div class="profile-field"><label>${l}</label><p>${v}</p></div>`).join('');
 
       } catch (e) { console.error(e); }
+    }
+
+    async function openQuestionPaper(testId) {
+      const res = await fetch(`${API}/tests/${testId}/question-paper`, { headers: { 'Authorization': 'Bearer ' + authToken } });
+      if (!res.ok) { showDashAlert('Question paper is not available.', 'error'); return; }
+      const url = URL.createObjectURL(await res.blob());
+      window.open(url, '_blank', 'noopener');
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
+
+    async function openAssignmentDefinition(assignmentId) {
+      const res = await fetch(`${API}/assignments/${assignmentId}/definition`, { headers: { 'Authorization': 'Bearer ' + authToken } });
+      if (!res.ok) { showDashAlert('Assignment definition is not available.', 'error'); return; }
+      const url = URL.createObjectURL(await res.blob()); window.open(url, '_blank', 'noopener'); setTimeout(() => URL.revokeObjectURL(url), 60000);
     }
 
     async function submitAssignment(assignmentId, button) {

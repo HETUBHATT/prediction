@@ -8,7 +8,7 @@ FastAPI backend for student management, academic records, attendance, assignment
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-python main.py
+python -m app.main
 ```
 
 Open Swagger UI at <http://127.0.0.1:4009/docs>.
@@ -17,8 +17,21 @@ The API uses PostgreSQL. Set `DATABASE_URL` before starting the app, for example
 
 ```powershell
 $env:DATABASE_URL = "postgresql://postgres:<password>@localhost:5432/prediction"
-python app/main.py
+python -m app.main
 ```
+
+## Keeping data consistent across clones
+
+Git commits source code, not PostgreSQL rows or uploaded files. For every device to see the same students, faculty, assignments, tests, and submissions, configure every clone with the same hosted PostgreSQL `DATABASE_URL`. Copy `.env.example` to `.env`, fill in the real connection string and credentials, and never commit `.env`.
+
+For local development on another device, create a private database backup on the original device and restore it on the new database:
+
+```powershell
+pg_dump --format=custom --file=backups/prediction.dump "$env:DATABASE_URL"
+pg_restore --clean --if-exists --dbname="$env:DATABASE_URL" backups/prediction.dump
+```
+
+Uploaded question papers and submissions are stored under `UPLOAD_DIR` and are not included in a Git commit. Copy that directory to the same path on the new device, or use shared object storage and set `UPLOAD_DIR` to a shared mounted location. The database backup alone preserves metadata but cannot restore missing files.
 
 Direct password login is used for administrators, faculty, and students. Set the administrator credentials and session lifetime in `.env`:
 

@@ -17,6 +17,7 @@ from fastapi.staticfiles import StaticFiles
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
+load_dotenv(BASE_DIR / 'env')
 
 try:
     from .db import IntegrityError, execute, init_db, query
@@ -310,11 +311,34 @@ def view_attendance(student_id: int):
     one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT subject,SUM(classes_held) classes_held,SUM(classes_attended) classes_attended,ROUND((SUM(classes_attended)*100.0/SUM(classes_held))::numeric,2) attendance_percentage FROM attendance WHERE student_id=? GROUP BY subject', [student_id])
 
 @app.post('/assignments', tags=['Assignment Tracking'])
-def add_assignment(payload: AssignmentCreate):
+def add_assignment(payload: AssignmentCreate, request: Request):
+    require_roles(request, 'admin', 'faculty')
     student = one_or_404('SELECT id,semester FROM students WHERE id=?', [payload.student_id], 'Student')
     if payload.subject and student['semester']:
         pass
     return create('INSERT INTO assignments(student_id,subject,title,due_date,status,score) VALUES(?,?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM assignments WHERE id=?', 'Assignment')
+
+@app.get('/assignments', tags=['Assignment Tracking'])
+def list_assignments(request: Request, student_id: int | None = None, status: str | None = None):
+    require_roles(request, 'admin', 'faculty')
+    sql = 'SELECT a.id,a.student_id,s.name AS student_name,s.email AS student_email,a.subject,a.title,a.due_date,a.status,a.score,a.submission_file_name,a.submitted_at,a.definition_file_name FROM assignments a JOIN students s ON s.id=a.student_id WHERE 1=1'
+    params = []
+    if student_id: sql += ' AND a.student_id=?'; params.append(student_id)
+    if status: sql += ' AND a.status=?'; params.append(status)
+    return query(sql + ' ORDER BY a.due_date DESC NULLS LAST,a.id DESC', params)
+
+@app.put('/assignments/{assignment_id}', tags=['Assignment Tracking'])
+def update_assignment(assignment_id: int, payload: AssignmentCreate, request: Request):
+    require_roles(request, 'admin', 'faculty')
+    one_or_404('SELECT id FROM assignments WHERE id=?', [assignment_id], 'Assignment')
+    values = payload.model_dump()
+    execute('UPDATE assignments SET student_id=?,subject=?,title=?,due_date=?,status=?,score=? WHERE id=?', [values['student_id'], values['subject'], values['title'], values['due_date'], values['status'], values['score'], assignment_id])
+    return one_or_404('SELECT * FROM assignments WHERE id=?', [assignment_id], 'Assignment')
+
+@app.get('/assignments/{assignment_id}', tags=['Assignment Tracking'])
+def get_assignment(assignment_id: int, request: Request):
+    require_roles(request, 'admin', 'faculty')
+    return one_or_404('SELECT * FROM assignments WHERE id=?', [assignment_id], 'Assignment')
 
 
 @app.post('/assignments/semester', tags=['Assignment Tracking'])
@@ -338,6 +362,32 @@ def add_semester_assignments(payload: SemesterAssignmentCreate):
 def view_assignments(student_id: int, status: str | None = None):
     one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student'); return query('SELECT * FROM assignments WHERE student_id=? AND status=?' if status else 'SELECT * FROM assignments WHERE student_id=?', [student_id, status] if status else [student_id])
 
+@app.post('/assignments/{assignment_id}/definition', tags=['Assignment Tracking'])
+async def upload_assignment_definition(assignment_id: int, request: Request, file: UploadFile = File(...)):
+    require_roles(request, 'admin', 'faculty')
+    assignment = one_or_404('SELECT * FROM assignments WHERE id=?', [assignment_id], 'Assignment')
+    suffix = Path(file.filename or '').suffix.lower()
+    if suffix not in ALLOWED_FILES or file.content_type != ALLOWED_FILES[suffix]:
+        raise HTTPException(415, 'Assignment definition must be a PDF, JPG, JPEG, or PNG file')
+    contents = await file.read(MAX_SUBMISSION_SIZE + 1)
+    if len(contents) > MAX_SUBMISSION_SIZE:
+        raise HTTPException(413, 'Assignment definition must be 10 MB or smaller')
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    stored_path = UPLOAD_DIR / f'{uuid4().hex}{suffix}'
+    stored_path.write_bytes(contents)
+    if assignment['definition_file_path']:
+        Path(assignment['definition_file_path']).unlink(missing_ok=True)
+    execute('UPDATE assignments SET definition_file_name=?,definition_file_path=?,definition_content_type=?,definition_file_size=? WHERE id=?', [file.filename, str(stored_path), file.content_type, len(contents), assignment_id])
+    return one_or_404('SELECT id,student_id,title,definition_file_name,definition_file_size FROM assignments WHERE id=?', [assignment_id], 'Assignment')
+
+@app.get('/assignments/{assignment_id}/definition', tags=['Assignment Tracking'], response_class=FileResponse)
+def download_assignment_definition(assignment_id: int, request: Request):
+    current_user(request)
+    assignment = one_or_404('SELECT definition_file_path,definition_file_name,definition_content_type FROM assignments WHERE id=?', [assignment_id], 'Assignment')
+    if not assignment['definition_file_path'] or not Path(assignment['definition_file_path']).is_file():
+        raise HTTPException(404, 'Assignment definition not found')
+    return FileResponse(assignment['definition_file_path'], media_type=assignment['definition_content_type'], filename=assignment['definition_file_name'])
+
 @app.post('/student/me/submit-assignment', tags=['Student Portal'])
 async def student_submit_assignment(request: Request, assignment_id: int = Form(...), file: UploadFile = File(...)):
     user = require_roles(request, 'student')
@@ -360,13 +410,49 @@ async def student_submit_assignment(request: Request, assignment_id: int = Form(
     return one_or_404('SELECT id,student_id,subject,title,status,submission_file_name,submission_file_size,submitted_at FROM assignments WHERE id=?', [assignment_id], 'Assignment')
 
 @app.post('/tests', tags=['Online Test Management'])
-def schedule_test(payload: TestCreate):
-    if payload.faculty_id: one_or_404('SELECT id FROM faculty WHERE id=?', [payload.faculty_id], 'Faculty')
-    return create('INSERT INTO tests(faculty_id,subject,title,total_marks,scheduled_at,question_paper) VALUES(?,?,?,?,?,?)', payload.model_dump().values(), 'SELECT * FROM tests WHERE id=?', 'Test')
+def schedule_test(payload: TestCreate, request: Request):
+    user = require_roles(request, 'admin', 'faculty')
+    values = payload.model_dump()
+    if user['role'] == 'faculty':
+        values['faculty_id'] = user['account_id']
+    elif values['faculty_id']:
+        one_or_404('SELECT id FROM faculty WHERE id=?', [values['faculty_id']], 'Faculty')
+    return create('INSERT INTO tests(faculty_id,subject,title,total_marks,scheduled_at,question_paper) VALUES(?,?,?,?,?,?)', values.values(), 'SELECT * FROM tests WHERE id=?', 'Test')
 
 @app.get('/tests', tags=['Online Test Management'])
 def list_tests(subject: str | None = None):
     return query('SELECT * FROM tests WHERE subject=? ORDER BY created_at DESC' if subject else 'SELECT * FROM tests ORDER BY created_at DESC', [subject] if subject else [])
+
+@app.post('/tests/{test_id}/question-paper', tags=['Online Test Management'])
+async def upload_question_paper(test_id: int, request: Request, file: UploadFile = File(...)):
+    user = require_roles(request, 'admin', 'faculty')
+    test = one_or_404('SELECT * FROM tests WHERE id=?', [test_id], 'Test')
+    if user['role'] == 'faculty' and test['faculty_id'] != user['account_id']:
+        raise HTTPException(403, 'Only the test owner can upload its question paper')
+    suffix = Path(file.filename or '').suffix.lower()
+    if suffix not in ALLOWED_FILES or file.content_type != ALLOWED_FILES[suffix]:
+        raise HTTPException(415, 'Question paper must be a PDF, JPG, JPEG, or PNG file')
+    contents = await file.read(MAX_SUBMISSION_SIZE + 1)
+    if len(contents) > MAX_SUBMISSION_SIZE:
+        raise HTTPException(413, 'Question paper must be 10 MB or smaller')
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    stored_path = UPLOAD_DIR / f'{uuid4().hex}{suffix}'
+    stored_path.write_bytes(contents)
+    if test['question_paper_file_path']:
+        Path(test['question_paper_file_path']).unlink(missing_ok=True)
+    execute(
+        'UPDATE tests SET question_paper_file_name=?,question_paper_file_path=?,question_paper_content_type=?,question_paper_file_size=? WHERE id=?',
+        [file.filename, str(stored_path), file.content_type, len(contents), test_id],
+    )
+    return one_or_404('SELECT id,subject,title,question_paper_file_name,question_paper_file_size FROM tests WHERE id=?', [test_id], 'Test')
+
+@app.get('/tests/{test_id}/question-paper', tags=['Online Test Management'], response_class=FileResponse)
+def download_question_paper(test_id: int, request: Request):
+    current_user(request)
+    test = one_or_404('SELECT question_paper_file_path,question_paper_file_name,question_paper_content_type FROM tests WHERE id=?', [test_id], 'Test')
+    if not test['question_paper_file_path'] or not Path(test['question_paper_file_path']).is_file():
+        raise HTTPException(404, 'Question paper not found')
+    return FileResponse(test['question_paper_file_path'], media_type=test['question_paper_content_type'], filename=test['question_paper_file_name'])
 
 def faculty_test(test_id: int, faculty_id: int):
     one_or_404('SELECT id FROM faculty WHERE id=?', [faculty_id], 'Faculty')
@@ -376,9 +462,10 @@ def faculty_test(test_id: int, faculty_id: int):
     return test
 
 @app.post('/tests/{test_id}/submissions', tags=['Online Test Management'])
-async def upload_test_paper(test_id: int, request: Request, student_id: int = Form(...), file: UploadFile = File(...)):
-    user = current_user(request)
-    if user['role'] == 'student' and student_id != user['account_id']:
+async def upload_test_paper(test_id: int, request: Request, student_id: int | None = Form(None), file: UploadFile = File(...)):
+    user = require_roles(request, 'student')
+    student_id = user['account_id'] if student_id is None else student_id
+    if student_id != user['account_id']:
         raise HTTPException(403, 'Students can only submit their own papers')
     one_or_404('SELECT id FROM tests WHERE id=?', [test_id], 'Test')
     one_or_404('SELECT id FROM students WHERE id=?', [student_id], 'Student')
@@ -417,7 +504,7 @@ def list_test_submissions(test_id: int, request: Request, student_id: int | None
 def list_submissions(faculty_id: int = Query(..., gt=0), auth_token: str = Query(...), test_id: int | None = None, student_id: int | None = None):
     faculty_from_credentials(faculty_id, auth_token)
     if test_id: faculty_test(test_id, faculty_id)
-    sql = 'SELECT s.id,s.test_id,s.student_id,s.file_name,s.content_type,s.file_size,s.submitted_at,s.score,s.feedback,s.review_mode,s.status FROM submissions s JOIN tests t ON t.id=s.test_id WHERE (t.faculty_id=? OR t.faculty_id IS NULL)'
+    sql = 'SELECT s.id,s.test_id,s.student_id,st.name AS student_name,st.email AS student_email,t.title AS test_title,s.file_name,s.content_type,s.file_size,s.submitted_at,s.score,s.feedback,s.review_mode,s.status FROM submissions s JOIN tests t ON t.id=s.test_id JOIN students st ON st.id=s.student_id WHERE (t.faculty_id=? OR t.faculty_id IS NULL)'
     params = [faculty_id]
     if test_id: sql += ' AND s.test_id=?'; params.append(test_id)
     if student_id: sql += ' AND s.student_id=?'; params.append(student_id)
@@ -573,7 +660,7 @@ def student_me_dashboard(request: Request):
     attendance = query('SELECT subject,SUM(classes_held) classes_held,SUM(classes_attended) classes_attended,ROUND((SUM(classes_attended)*100.0/SUM(classes_held))::numeric,2) attendance_percentage FROM attendance WHERE student_id=? GROUP BY subject', [sid])
     results = query('SELECT * FROM results WHERE student_id=? ORDER BY semester,subject', [sid])
     assignments = query('SELECT * FROM assignments WHERE student_id=? ORDER BY due_date DESC LIMIT 5', [sid])
-    tests = query('SELECT t.id,t.subject,t.title,t.total_marks,t.scheduled_at,s.score,s.status,s.submitted_at FROM tests t LEFT JOIN submissions s ON s.test_id=t.id AND s.student_id=? ORDER BY t.created_at DESC LIMIT 10', [sid])
+    tests = query('SELECT t.id,t.subject,t.title,t.total_marks,t.scheduled_at,t.question_paper_file_name,s.score,s.status,s.submitted_at FROM tests t LEFT JOIN submissions s ON s.test_id=t.id AND s.student_id=? ORDER BY t.created_at DESC LIMIT 10', [sid])
     counts = {
         'assignments': query('SELECT COUNT(*) count FROM assignments WHERE student_id=?', [sid])[0]['count'],
         'pending_assignments': query("SELECT COUNT(*) count FROM assignments WHERE student_id=? AND status='pending'", [sid])[0]['count'],
